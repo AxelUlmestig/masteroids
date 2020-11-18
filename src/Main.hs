@@ -4,6 +4,8 @@ import           Control.Lens                       (over, set, view)
 import           Graphics.Gloss
 import           Graphics.Gloss.Interface.Pure.Game
 
+import           Assets                             (Assets, fireSprite,
+                                                     loadAssets, playerSprite)
 import           GameState                          (GameState (..),
                                                      gameStateAcceleratingL,
                                                      gameStateMousePositionL,
@@ -20,22 +22,25 @@ playerAcceleration = Vector 0.3 0
 windowDisplay :: Display
 windowDisplay = InWindow "Window" (800, 800) (10, 10)
 
-type World = (Float, Float, Float)
-
 main :: IO ()
 main = do
-  asteroidBMP <- rotate 90 <$> loadBMP "assets/playerShip2-blue.bmp"
+  assets <- loadAssets
   play
     windowDisplay
     black
     60
     initGameState
-    (drawingFunc asteroidBMP)
+    (drawingFunc assets)
     inputHandler
     updateFunc
 
-drawingFunc :: Picture -> GameState -> Picture
-drawingFunc picture GameState{ playerPosition = (Vector x y), playerAngle = a } = translate x y (rotate (-a) picture)
+drawingFunc :: Assets -> GameState -> Picture
+drawingFunc assets GameState{ playerPosition = (Vector x y), playerAngle = a, accelerating = acc } = pictures [player, fire]
+  where
+    player = translate x y (rotate (-a) (playerSprite assets))
+    fire = if acc then translate x' y' (rotate (-a) (fireSprite assets)) else Blank
+      where
+        (Vector x' y') = addV (Vector x y) (rotateV (180 + a) (Vector 50 0))
 
 inputHandler :: Event -> GameState -> GameState
 inputHandler (EventMotion (mx, my)) gs                    = set  gameStateMousePositionL (Vector mx my) gs
