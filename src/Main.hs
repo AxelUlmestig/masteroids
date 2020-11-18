@@ -38,10 +38,6 @@ drawingFunc :: Picture -> GameState -> Picture
 drawingFunc picture GameState{ playerPosition = (Vector x y), playerAngle = a } = translate x y (rotate (-a) picture)
 
 inputHandler :: Event -> GameState -> GameState
-inputHandler (EventKey (SpecialKey KeyUp) Down _ _) gs    = over gameStatePlayerPositionL (addV (Vector 0 10)) gs
-inputHandler (EventKey (SpecialKey KeyDown) Down _ _) gs  = over gameStatePlayerPositionL (addV (Vector 0 (-10))) gs
-inputHandler (EventKey (SpecialKey KeyRight) Down _ _) gs = over gameStatePlayerPositionL (addV (Vector 10 0)) gs
-inputHandler (EventKey (SpecialKey KeyLeft) Down _ _) gs  = over gameStatePlayerPositionL (addV (Vector (-10) 0)) gs
 inputHandler (EventMotion (mx, my)) gs                    = set  gameStateMousePositionL (Vector mx my) gs
 inputHandler (EventKey (SpecialKey KeySpace) Down _ _) gs = set  gameStateAcceleratingL True gs
 inputHandler (EventKey (SpecialKey KeySpace) Up _ _) gs   = set  gameStateAcceleratingL False gs
@@ -53,7 +49,7 @@ updateFunc _ = foldr (.) id [angleUpdate, velocityUpdate, accelerationUpdate, bo
     angleUpdate gs = set gameStatePlayerAngleL (calculateAngle (playerPosition gs) (mousePosition gs)) gs
     velocityUpdate gs = over gameStatePlayerPositionL (addV (playerVelocity gs)) gs
     accelerationUpdate gs = if accelerating gs then over gameStatePlayerVelocityL (addV (rotateV (playerAngle gs) playerAcceleration)) gs else gs
-    borderPatrolX gs = if view (gameStatePlayerPositionL . vectorXL) gs > 400 then set (gameStatePlayerPositionL . vectorXL) (-400) gs else gs
-    borderPatrolX' gs = if view (gameStatePlayerPositionL . vectorXL) gs < (-400) then set (gameStatePlayerPositionL . vectorXL) 400 gs else gs
-    borderPatrolY gs = if view (gameStatePlayerPositionL . vectorYL) gs > 400 then set (gameStatePlayerPositionL . vectorYL) (-400) gs else gs
-    borderPatrolY' gs = if view (gameStatePlayerPositionL . vectorYL) gs < (-400) then set (gameStatePlayerPositionL . vectorYL) 400 gs else gs
+    borderPatrolX  gs = if view (gameStatePlayerPositionL . vectorXL) gs > 400    then set (gameStatePlayerPositionL . vectorXL) (-400) gs  else gs
+    borderPatrolX' gs = if view (gameStatePlayerPositionL . vectorXL) gs < (-400) then set (gameStatePlayerPositionL . vectorXL) 400 gs     else gs
+    borderPatrolY  gs = if view (gameStatePlayerPositionL . vectorYL) gs > 400    then set (gameStatePlayerPositionL . vectorYL) (-400) gs  else gs
+    borderPatrolY' gs = if view (gameStatePlayerPositionL . vectorYL) gs < (-400) then set (gameStatePlayerPositionL . vectorYL) 400 gs     else gs
