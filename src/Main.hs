@@ -13,7 +13,7 @@ import           Vector                             (Vector (..), addV,
                                                      calculateAngle)
 
 windowDisplay :: Display
-windowDisplay = InWindow "Window" (500, 500) (10, 10)
+windowDisplay = InWindow "Window" (750, 750) (10, 10)
 
 type World = (Float, Float, Float)
 
@@ -33,21 +33,12 @@ drawingFunc :: Picture -> GameState -> Picture
 drawingFunc picture GameState{ playerPosition = (Vector x y), playerAngle = a } = translate x y (rotate a picture)
 
 inputHandler :: Event -> GameState -> GameState
-inputHandler (EventKey (SpecialKey KeyUp) Down _ _) gs    = over gameStatePlayerPositionL (addV (Vector 0 10)) gs
-inputHandler (EventKey (SpecialKey KeyDown) Down _ _) gs  = over gameStatePlayerPositionL (addV (Vector 0 (-10))) gs
-inputHandler (EventKey (SpecialKey KeyRight) Down _ _) gs = over gameStatePlayerPositionL (addV (Vector 10 0)) gs
-inputHandler (EventKey (SpecialKey KeyLeft) Down _ _) gs  = over gameStatePlayerPositionL (addV (Vector (-10) 0)) gs
-inputHandler (EventMotion (mx, my) ) gs                   = set gameStatePlayerAngleL (calculateAngle (playerPosition gs) (Vector mx my)) gs
-inputHandler _ gs                                         = gs
+inputHandler (EventKey (SpecialKey KeyUp) Down _ _)    = over gameStatePlayerPositionL (addV (Vector 0 10))
+inputHandler (EventKey (SpecialKey KeyDown) Down _ _)  = over gameStatePlayerPositionL (addV (Vector 0 (-10)))
+inputHandler (EventKey (SpecialKey KeyRight) Down _ _) = over gameStatePlayerPositionL (addV (Vector 10 0))
+inputHandler (EventKey (SpecialKey KeyLeft) Down _ _)  = over gameStatePlayerPositionL (addV (Vector (-10) 0))
+inputHandler (EventMotion (mx, my) )                   = set gameStateMousePositionL (Vector mx my)
+inputHandler _                                         = id
 
 updateFunc :: Float -> GameState -> GameState
-updateFunc = const id
--- updateFunc :: Float -> World -> World
--- updateFunc _ (x, y, a) = (towardCenter x, towardCenter y, a)
---   where
---     towardCenter :: Float -> Float
---     towardCenter c = if abs c < 0.25
---       then 0
---       else if c > 0
---         then c - 0.25
---         else c + 0.25
+updateFunc _ gs = set gameStatePlayerAngleL (calculateAngle (playerPosition gs) (mousePosition gs)) gs
