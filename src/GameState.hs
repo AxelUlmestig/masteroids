@@ -1,18 +1,27 @@
 module GameState (
   GameState(..),
   initGameState,
+  gameStateGameWidthL,
+  gameStateGameHeightL,
   gameStatePlayerPositionL,
   gameStatePlayerVelocityL,
   gameStatePlayerAngleL,
   gameStateMousePositionL,
-  gameStateAcceleratingL
+  gameStateAcceleratingL,
+  defaultWidth,
+  defaultHeight
 ) where
 
 import           Control.Lens (Lens', lens)
 
 import           Vector       (Vector (..))
 
+defaultWidth = 800
+defaultHeight = 800
+
 data GameState = GameState {
+  gameWidth      :: Int,
+  gameHeight     :: Int,
   playerPosition :: Vector Float,
   playerAngle    :: Float,
   playerVelocity :: Vector Float,
@@ -21,7 +30,21 @@ data GameState = GameState {
 } deriving (Eq, Show)
 
 initGameState :: GameState
-initGameState = GameState (Vector 0 0) 0 (Vector 0 0) (Vector 0 0) False
+initGameState = GameState {
+    gameWidth = defaultWidth,
+    gameHeight = defaultHeight,
+    playerPosition = (Vector 0 0),
+    playerAngle = 0,
+    playerVelocity = (Vector 0 0),
+    mousePosition = (Vector 0 0),
+    accelerating = False
+  }
+
+gameStateGameWidthL :: Lens' GameState Int
+gameStateGameWidthL = lens gameWidth (\gs gw -> gs { gameWidth = gw })
+
+gameStateGameHeightL :: Lens' GameState Int
+gameStateGameHeightL = lens gameWidth (\gs gw -> gs { gameWidth = gw })
 
 gameStatePlayerPositionL :: Lens' GameState (Vector Float)
 gameStatePlayerPositionL = lens playerPosition (\gs pp -> gs { playerPosition = pp })

@@ -1,12 +1,17 @@
+{-# LANGUAGE RankNTypes #-}
+
 module Main where
 
-import           Control.Lens                       (over, set, view)
+import           Control.Lens                       (Lens', over, set, view)
+import           Data.Fixed                         (mod')
 import           Graphics.Gloss
 import           Graphics.Gloss.Interface.Pure.Game
 
 import           Assets                             (Assets, fireSprite,
                                                      loadAssets, playerSprite)
 import           GameState                          (GameState (..),
+                                                     defaultHeight,
+                                                     defaultWidth,
                                                      gameStateAcceleratingL,
                                                      gameStateMousePositionL,
                                                      gameStatePlayerAngleL,
@@ -20,7 +25,7 @@ import           Vector                             (Vector (..), addV,
 playerAcceleration = Vector 0.3 0
 
 windowDisplay :: Display
-windowDisplay = InWindow "Window" (800, 800) (10, 10)
+windowDisplay = InWindow "Window" (defaultWidth, defaultHeight) (10, 10)
 
 main :: IO ()
 main = do
@@ -43,18 +48,25 @@ drawingFunc assets GameState{ playerPosition = (Vector x y), playerAngle = a, ac
         (Vector x' y') = addV (Vector x y) (rotateV (180 + a) (Vector 50 0))
 
 inputHandler :: Event -> GameState -> GameState
-inputHandler (EventMotion (mx, my)) gs                    = set  gameStateMousePositionL (Vector mx my) gs
-inputHandler (EventKey (SpecialKey KeySpace) Down _ _) gs = set  gameStateAcceleratingL True gs
-inputHandler (EventKey (SpecialKey KeySpace) Up _ _) gs   = set  gameStateAcceleratingL False gs
+inputHandler (EventMotion (mx, my)) gs                    = set gameStateMousePositionL (Vector mx my) gs
+inputHandler (EventKey (SpecialKey KeySpace) Down _ _) gs = set gameStateAcceleratingL True gs
+inputHandler (EventKey (SpecialKey KeySpace) Up _ _) gs   = set gameStateAcceleratingL False gs
+inputHandler (EventResize (width, height)) gs             = gs { gameWidth = width, gameHeight = height }
 inputHandler _ gs                                         = gs
 
 updateFunc :: Float -> GameState -> GameState
-updateFunc _ = foldr (.) id [angleUpdate, velocityUpdate, accelerationUpdate, borderPatrolX, borderPatrolX', borderPatrolY, borderPatrolY']
+updateFunc _ = foldr (.) id [angleUpdate, velocityUpdate, accelerationUpdate, borderPatrolX, borderPatrolY]
   where
     angleUpdate gs = set gameStatePlayerAngleL (calculateAngle (playerPosition gs) (mousePosition gs)) gs
     velocityUpdate gs = over gameStatePlayerPositionL (addV (playerVelocity gs)) gs
     accelerationUpdate gs = if accelerating gs then over gameStatePlayerVelocityL (addV (rotateV (playerAngle gs) playerAcceleration)) gs else gs
-    borderPatrolX  gs = if view (gameStatePlayerPositionL . vectorXL) gs > 400    then set (gameStatePlayerPositionL . vectorXL) (-400) gs  else gs
-    borderPatrolX' gs = if view (gameStatePlayerPositionL . vectorXL) gs < (-400) then set (gameStatePlayerPositionL . vectorXL) 400 gs     else gs
-    borderPatrolY  gs = if view (gameStatePlayerPositionL . vectorYL) gs > 400    then set (gameStatePlayerPositionL . vectorYL) (-400) gs  else gs
-    borderPatrolY' gs = if view (gameStatePlayerPositionL . vectorYL) gs < (-400) then set (gameStatePlayerPositionL . vectorYL) 400 gs     else gs
+    borderPatrolX gs = borderPatrol (gameWidth gs) (gameStatePlayerPositionL . vectorXL) gs
+    borderPatrolY gs = borderPatrol (gameHeight gs) (gameStatePlayerPositionL . vectorYL) gs
+
+borderPatrol :: Int -> Lens' GameState Float -> GameState -> GameState
+borderPatrol width l gs = let
+                            value = view l gs
+                            limit = fromIntegral width / 2
+                          in if abs value > limit
+                          then set l (((value + limit) `mod'` fromIntegral width) - limit) gs
+                          else gs
