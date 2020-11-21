@@ -1,1 +1,6 @@
-# masteroids
+# Masteroids
+
+### Run
+```
+$ stack run
+```

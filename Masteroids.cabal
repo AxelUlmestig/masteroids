@@ -1,14 +1,14 @@
-name:                masteroids
+name:                Masteroids
 version:             0.1.0.0
 -- synopsis:
 -- description:
-homepage:            https://github.com/githubuser/masteroids#readme
+homepage:            https://github.com/axelulmestig/masteroids#readme
 license:             BSD3
 license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2020 Author name here
-category:            Web
+author:              Axel Ulmestig
+maintainer:          axel.ulmestig@gmail.com
+copyright:           2020 Axel Ulmestig
+category:            Game
 build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
