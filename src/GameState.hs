@@ -34,13 +34,13 @@ data GameState = GameState {
 
 initGameState :: GameState
 initGameState = GameState {
-    gameWidth = defaultWidth,
-    gameHeight = defaultHeight,
-    playerPosition = Vector 0 0,
-    playerAngle = 0,
-    playerVelocity = Vector 0 0,
-    mousePosition = Vector 0 0,
-    accelerating = False
+    gameWidth       = defaultWidth,
+    gameHeight      = defaultHeight,
+    playerPosition  = Vector 0 0,
+    playerAngle     = 0,
+    playerVelocity  = Vector 0 0,
+    mousePosition   = Vector 0 0,
+    accelerating    = False
   }
 
 gameStateGameWidthL :: Lens' GameState Int
