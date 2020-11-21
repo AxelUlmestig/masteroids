@@ -17,9 +17,12 @@ executable masteroids
   hs-source-dirs:      src
   main-is:             Main.hs
   default-language:    Haskell2010
-  exposed-modules:     Vector,
+  other-modules:       Vector,
                        Assets,
-                       GameState
+                       GameState,
+                       HandleInput,
+                       ProgressGameState,
+                       Render
   build-depends:       base >= 4.7 && < 5,
                        gloss >= 1.13,
                        lens
