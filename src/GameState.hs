@@ -16,7 +16,10 @@ import           Control.Lens (Lens', lens)
 
 import           Vector       (Vector (..))
 
+defaultWidth :: Int
 defaultWidth = 800
+
+defaultHeight :: Int
 defaultHeight = 800
 
 data GameState = GameState {
@@ -33,10 +36,10 @@ initGameState :: GameState
 initGameState = GameState {
     gameWidth = defaultWidth,
     gameHeight = defaultHeight,
-    playerPosition = (Vector 0 0),
+    playerPosition = Vector 0 0,
     playerAngle = 0,
-    playerVelocity = (Vector 0 0),
-    mousePosition = (Vector 0 0),
+    playerVelocity = Vector 0 0,
+    mousePosition = Vector 0 0,
     accelerating = False
   }
 

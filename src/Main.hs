@@ -7,9 +7,6 @@ import           GameState         (defaultHeight, defaultWidth, initGameState)
 import           HandleInput       (handleInput)
 import           ProgressGameState (progressGameState)
 import           Render            (render)
-import           Vector            (Vector (Vector))
-
-playerAcceleration = Vector 0.3 0
 
 windowDisplay :: Display
 windowDisplay = InWindow "Window" (defaultWidth, defaultHeight) (10, 10)

@@ -11,6 +11,7 @@ import           GameState    (GameState (..), gameStatePlayerAngleL,
 import           Vector       (Vector (..), addV, calculateAngle, rotateV,
                                vectorXL, vectorYL)
 
+playerAcceleration :: Vector Float
 playerAcceleration = Vector 0.3 0
 
 progressGameState :: Float -> GameState -> GameState
