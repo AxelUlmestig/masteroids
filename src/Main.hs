@@ -65,8 +65,7 @@ updateFunc _ = foldr (.) id [angleUpdate, velocityUpdate, accelerationUpdate, bo
 
 borderPatrol :: Int -> Lens' GameState Float -> GameState -> GameState
 borderPatrol width l gs = let
-                            value = view l gs
-                            limit = fromIntegral width / 2
-                          in if abs value > limit
-                          then set l (((value + limit) `mod'` fromIntegral width) - limit) gs
-                          else gs
+                            f value =  ((value + limit) `mod'` fromIntegral width) - limit
+                              where
+                                limit = fromIntegral width / 2
+                          in over l f gs
