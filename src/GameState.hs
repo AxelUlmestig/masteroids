@@ -1,10 +1,11 @@
 module GameState (
   GameState(..),
+  playerId,
   initGameState,
   gameStateGameWidthL,
   gameStateGameHeightL,
-  gameStatePlayerPositionL,
-  gameStatePlayerVelocityL,
+  gameStatePositionsL,
+  gameStateVelocitiesL,
   gameStatePlayerAngleL,
   gameStateMousePositionL,
   gameStateAcceleratingL,
@@ -12,9 +13,10 @@ module GameState (
   defaultHeight
 ) where
 
-import           Control.Lens (Lens', lens)
+import           Control.Lens    (Lens', lens)
+import qualified Data.Map.Strict as M
 
-import           Vector       (Vector (..))
+import           Vector          (Vector (..))
 
 defaultWidth :: Int
 defaultWidth = 800
@@ -22,23 +24,26 @@ defaultWidth = 800
 defaultHeight :: Int
 defaultHeight = 800
 
+playerId :: Int
+playerId = 1
+
 data GameState = GameState {
-  gameWidth      :: Int,
-  gameHeight     :: Int,
-  playerPosition :: Vector Float,
-  playerAngle    :: Float,
-  playerVelocity :: Vector Float,
-  mousePosition  :: Vector Float,
-  accelerating   :: Bool
+  gameWidth     :: Int,
+  gameHeight    :: Int,
+  positions     :: M.Map Int (Vector Float),
+  velocities    :: M.Map Int (Vector Float),
+  playerAngle   :: Float,
+  mousePosition :: Vector Float,
+  accelerating  :: Bool
 } deriving (Eq, Show)
 
 initGameState :: GameState
 initGameState = GameState {
     gameWidth       = defaultWidth,
     gameHeight      = defaultHeight,
-    playerPosition  = Vector 0 0,
+    positions       = M.fromList [(playerId, Vector 0 0)],
+    velocities      = M.fromList [(playerId, Vector 0 0)],
     playerAngle     = 0,
-    playerVelocity  = Vector 0 0,
     mousePosition   = Vector 0 0,
     accelerating    = False
   }
@@ -49,14 +54,14 @@ gameStateGameWidthL = lens gameWidth (\gs gw -> gs { gameWidth = gw })
 gameStateGameHeightL :: Lens' GameState Int
 gameStateGameHeightL = lens gameWidth (\gs gw -> gs { gameWidth = gw })
 
-gameStatePlayerPositionL :: Lens' GameState (Vector Float)
-gameStatePlayerPositionL = lens playerPosition (\gs pp -> gs { playerPosition = pp })
+gameStatePositionsL :: Lens' GameState (M.Map Int (Vector Float))
+gameStatePositionsL = lens positions (\gs ps -> gs { positions = ps })
+
+gameStateVelocitiesL :: Lens' GameState (M.Map Int (Vector Float))
+gameStateVelocitiesL = lens velocities (\gs vs -> gs { velocities = vs })
 
 gameStatePlayerAngleL :: Lens' GameState Float
 gameStatePlayerAngleL = lens playerAngle (\gs pa -> gs { playerAngle = pa })
-
-gameStatePlayerVelocityL :: Lens' GameState (Vector Float)
-gameStatePlayerVelocityL = lens playerVelocity (\gs pv -> gs { playerVelocity = pv })
 
 gameStateMousePositionL :: Lens' GameState (Vector Float)
 gameStateMousePositionL = lens mousePosition (\gs mp -> gs { mousePosition = mp })

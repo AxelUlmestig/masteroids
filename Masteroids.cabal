@@ -26,4 +26,5 @@ executable masteroids
                        Render
   build-depends:       base >= 4.7 && < 5,
                        gloss >= 1.13,
-                       lens
+                       lens,
+                       containers

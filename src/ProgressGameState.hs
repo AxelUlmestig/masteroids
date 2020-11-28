@@ -1,31 +1,48 @@
 {-# LANGUAGE RankNTypes #-}
 
-module ProgressGameState (progressGameState) where
+module ProgressGameState (progressGameState, acceleratePlayer) where -- todo remove acceleratePlayer
 
-import           Control.Lens (Lens', over, set)
-import           Data.Fixed   (mod')
+import           Control.Lens    (at, imap, ix, over, set, view)
+import           Data.Fixed      (mod')
+import qualified Data.Map.Strict as M
+import           Data.Maybe      (fromJust)
 
-import           GameState    (GameState (..), gameStatePlayerAngleL,
-                               gameStatePlayerPositionL,
-                               gameStatePlayerVelocityL)
-import           Vector       (Vector (..), addV, calculateAngle, rotateV,
-                               vectorXL, vectorYL)
+import           GameState       (GameState (..), gameStatePlayerAngleL,
+                                  gameStatePositionsL, gameStateVelocitiesL,
+                                  playerId)
+import           Vector          (Vector (..), addV, calculateAngle, rotateV)
 
 playerAcceleration :: Vector Float
 playerAcceleration = Vector 0.3 0
 
 progressGameState :: Float -> GameState -> GameState
-progressGameState _ = foldr (.) id [angleUpdate, velocityUpdate, accelerationUpdate, borderPatrolX, borderPatrolY]
-  where
-    angleUpdate gs = set gameStatePlayerAngleL (calculateAngle (playerPosition gs) (mousePosition gs)) gs
-    velocityUpdate gs = over gameStatePlayerPositionL (addV (playerVelocity gs)) gs
-    accelerationUpdate gs = if accelerating gs then over gameStatePlayerVelocityL (addV (rotateV (playerAngle gs) playerAcceleration)) gs else gs
-    borderPatrolX gs = borderPatrol (gameWidth gs) (gameStatePlayerPositionL . vectorXL) gs
-    borderPatrolY gs = borderPatrol (gameHeight gs) (gameStatePlayerPositionL . vectorYL) gs
+progressGameState _ = foldr (.) id [updatePositions, borderPatrol', updatePlayerAngle, acceleratePlayer]
 
-borderPatrol :: Int -> Lens' GameState Float -> GameState -> GameState
-borderPatrol width l gs = let
-                            f value =  ((value + limit) `mod'` fromIntegral width) - limit
-                              where
-                                limit = fromIntegral width / 2
-                          in over l f gs
+updatePlayerAngle :: GameState -> GameState
+updatePlayerAngle gs = let
+                         -- pp will crash if the player position is missing
+                         pp = fromJust $ view (gameStatePositionsL . at playerId) gs :: Vector Float
+                         mp = mousePosition gs :: Vector Float
+                       in
+                         set gameStatePlayerAngleL (calculateAngle pp mp) gs
+
+acceleratePlayer :: GameState -> GameState
+acceleratePlayer gs = if accelerating gs
+                      then let
+                        acceleration = rotateV (playerAngle gs) playerAcceleration
+                      in over (gameStateVelocitiesL . ix playerId) (addV acceleration) gs
+                      else gs
+
+borderPatrol' :: GameState -> GameState
+borderPatrol' gs = let
+                     constrainPosition (Vector x y) = Vector (constrain (gameWidth gs) x) (constrain (gameHeight gs) y)
+                     constrain width value          = ((value + limit) `mod'` fromIntegral width) - limit
+                       where
+                         limit = fromIntegral width / 2
+                   in over gameStatePositionsL (fmap constrainPosition) gs
+
+updatePositions :: GameState -> GameState
+updatePositions gs = let
+                       applyVelocity :: Int -> Vector Float -> Vector Float
+                       applyVelocity i = addV $ M.findWithDefault (Vector 0 0) i (velocities gs)
+                     in over gameStatePositionsL (imap applyVelocity) gs
