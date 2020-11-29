@@ -55,7 +55,10 @@ initGameState = let
                     mousePosition   = Vector 0 0,
                     accelerating    = False
                   }
-                in addEntity Player (Vector 0 0) (Vector 0 0) 0 empty
+
+                  addPlayer = addEntity Player (Vector 0 0) (Vector 0 0) 0
+                  addAsteroid = addEntity Asteroid (Vector 100 100) (Vector 6 4) 0
+                in addAsteroid $ addPlayer empty
 
 gameStateGameWidthL :: Lens' GameState Int
 gameStateGameWidthL = lens gameWidth (\gs gw -> gs { gameWidth = gw })
