@@ -1,6 +1,6 @@
 {-# LANGUAGE RankNTypes #-}
 
-module ProgressGameState (progressGameState, acceleratePlayer) where -- todo remove acceleratePlayer
+module ProgressGameState (progressGameState) where
 
 import           Control.Lens    (at, imap, ix, over, set, view)
 import           Data.Fixed      (mod')
