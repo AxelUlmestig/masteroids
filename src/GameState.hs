@@ -27,9 +27,6 @@ defaultWidth = 800
 defaultHeight :: Int
 defaultHeight = 800
 
-playerId :: Int
-playerId = 1
-
 data GameState = GameState {
   gameWidth     :: Int,
   gameHeight    :: Int,
@@ -46,17 +43,19 @@ data EntityType = Player | Asteroid
   deriving (Eq, Show)
 
 initGameState :: GameState
-initGameState = GameState {
-    gameWidth       = defaultWidth,
-    gameHeight      = defaultHeight,
-    availableId     = playerId + 1,
-    entityTypes     = M.fromList [(playerId, Player)],
-    positions       = M.fromList [(playerId, Vector 0 0)],
-    velocities      = M.fromList [(playerId, Vector 0 0)],
-    angles          = M.fromList [(playerId, 0)],
-    mousePosition   = Vector 0 0,
-    accelerating    = False
-  }
+initGameState = let
+                  empty = GameState {
+                    gameWidth       = defaultWidth,
+                    gameHeight      = defaultHeight,
+                    availableId     = 1,
+                    entityTypes     = M.empty,
+                    positions       = M.empty,
+                    velocities      = M.empty,
+                    angles          = M.empty,
+                    mousePosition   = Vector 0 0,
+                    accelerating    = False
+                  }
+                in addEntity Player (Vector 0 0) (Vector 0 0) 0 empty
 
 gameStateGameWidthL :: Lens' GameState Int
 gameStateGameWidthL = lens gameWidth (\gs gw -> gs { gameWidth = gw })
