@@ -1,5 +1,6 @@
 module GameState (
   GameState(..),
+  EntityType(..),
   playerId,
   initGameState,
   gameStateGameWidthL,
