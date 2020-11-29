@@ -6,7 +6,7 @@ module GameState (
   gameStateGameHeightL,
   gameStatePositionsL,
   gameStateVelocitiesL,
-  gameStatePlayerAngleL,
+  gameStateAnglesL,
   gameStateMousePositionL,
   gameStateAcceleratingL,
   defaultWidth,
@@ -32,7 +32,7 @@ data GameState = GameState {
   gameHeight    :: Int,
   positions     :: M.Map Int (Vector Float),
   velocities    :: M.Map Int (Vector Float),
-  playerAngle   :: Float,
+  angles        :: M.Map Int Float,
   mousePosition :: Vector Float,
   accelerating  :: Bool
 } deriving (Eq, Show)
@@ -43,7 +43,7 @@ initGameState = GameState {
     gameHeight      = defaultHeight,
     positions       = M.fromList [(playerId, Vector 0 0)],
     velocities      = M.fromList [(playerId, Vector 0 0)],
-    playerAngle     = 0,
+    angles          = M.fromList [(playerId, 0)],
     mousePosition   = Vector 0 0,
     accelerating    = False
   }
@@ -60,8 +60,8 @@ gameStatePositionsL = lens positions (\gs ps -> gs { positions = ps })
 gameStateVelocitiesL :: Lens' GameState (M.Map Int (Vector Float))
 gameStateVelocitiesL = lens velocities (\gs vs -> gs { velocities = vs })
 
-gameStatePlayerAngleL :: Lens' GameState Float
-gameStatePlayerAngleL = lens playerAngle (\gs pa -> gs { playerAngle = pa })
+gameStateAnglesL :: Lens' GameState (M.Map Int Float)
+gameStateAnglesL = lens angles (\gs as -> gs { angles = as })
 
 gameStateMousePositionL :: Lens' GameState (Vector Float)
 gameStateMousePositionL = lens mousePosition (\gs mp -> gs { mousePosition = mp })

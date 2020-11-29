@@ -7,7 +7,7 @@ import           Data.Fixed      (mod')
 import qualified Data.Map.Strict as M
 import           Data.Maybe      (fromJust)
 
-import           GameState       (GameState (..), gameStatePlayerAngleL,
+import           GameState       (GameState (..), gameStateAnglesL,
                                   gameStatePositionsL, gameStateVelocitiesL,
                                   playerId)
 import           Vector          (Vector (..), addV, calculateAngle, rotateV)
@@ -24,12 +24,14 @@ updatePlayerAngle gs = let
                          pp = fromJust $ view (gameStatePositionsL . at playerId) gs :: Vector Float
                          mp = mousePosition gs :: Vector Float
                        in
-                         set gameStatePlayerAngleL (calculateAngle pp mp) gs
+                         set (gameStateAnglesL . ix playerId) (calculateAngle pp mp) gs
 
 acceleratePlayer :: GameState -> GameState
 acceleratePlayer gs = if accelerating gs
                       then let
-                        acceleration = rotateV (playerAngle gs) playerAcceleration
+                        -- playerAngle will crash if the player angle is missing
+                        playerAngle = fromJust $ view (gameStateAnglesL . at playerId) gs
+                        acceleration = rotateV playerAngle playerAcceleration
                       in over (gameStateVelocitiesL . ix playerId) (addV acceleration) gs
                       else gs
 
