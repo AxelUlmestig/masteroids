@@ -1,6 +1,9 @@
 module GameState (
   GameState(..),
   EntityType(..),
+  Position(..),
+  Velocity(..),
+  Angle(..),
   initGameState,
   gameStateGameWidthL,
   gameStateGameHeightL,
@@ -19,6 +22,8 @@ module GameState (
 import           Control.Lens    (Lens', lens, over)
 import qualified Data.Map.Strict as M
 
+import           Newtypes        (Angle (Angle), Position (Position),
+                                  Velocity (Velocity))
 import           Vector          (Vector (..))
 
 defaultWidth :: Int
@@ -32,10 +37,10 @@ data GameState = GameState {
   gameHeight    :: Int,
   availableId   :: Int,
   entityTypes   :: M.Map Int EntityType,
-  positions     :: M.Map Int (Vector Float),
-  velocities    :: M.Map Int (Vector Float),
-  angles        :: M.Map Int Float,
-  mousePosition :: Vector Float,
+  positions     :: M.Map Int Position,
+  velocities    :: M.Map Int Velocity,
+  angles        :: M.Map Int Angle,
+  mousePosition :: Position,
   accelerating  :: Bool
 } deriving (Eq, Show)
 
@@ -52,12 +57,12 @@ initGameState = let
                     positions       = M.empty,
                     velocities      = M.empty,
                     angles          = M.empty,
-                    mousePosition   = Vector 0 0,
+                    mousePosition   = Position (Vector 0 0),
                     accelerating    = False
                   }
 
-                  addPlayer = addEntity Player (Vector 0 0) (Vector 0 0) 0
-                  addAsteroid = addEntity Asteroid (Vector 100 100) (Vector 6 4) 0
+                  addPlayer = addEntity Player (Position (Vector 0 0)) (Velocity (Vector 0 0)) (Angle 0)
+                  addAsteroid = addEntity Asteroid (Position (Vector 100 100)) (Velocity (Vector 6 4)) (Angle 0)
                 in addAsteroid $ addPlayer empty
 
 gameStateGameWidthL :: Lens' GameState Int
@@ -69,16 +74,16 @@ gameStateGameHeightL = lens gameWidth (\gs gw -> gs { gameWidth = gw })
 gameStateEntityTypesL :: Lens' GameState (M.Map Int EntityType)
 gameStateEntityTypesL = lens entityTypes (\gs ts -> gs { entityTypes = ts })
 
-gameStatePositionsL :: Lens' GameState (M.Map Int (Vector Float))
+gameStatePositionsL :: Lens' GameState (M.Map Int Position)
 gameStatePositionsL = lens positions (\gs ps -> gs { positions = ps })
 
-gameStateVelocitiesL :: Lens' GameState (M.Map Int (Vector Float))
+gameStateVelocitiesL :: Lens' GameState (M.Map Int Velocity)
 gameStateVelocitiesL = lens velocities (\gs vs -> gs { velocities = vs })
 
-gameStateAnglesL :: Lens' GameState (M.Map Int Float)
+gameStateAnglesL :: Lens' GameState (M.Map Int Angle)
 gameStateAnglesL = lens angles (\gs as -> gs { angles = as })
 
-gameStateMousePositionL :: Lens' GameState (Vector Float)
+gameStateMousePositionL :: Lens' GameState Position
 gameStateMousePositionL = lens mousePosition (\gs mp -> gs { mousePosition = mp })
 
 gameStateAcceleratingL :: Lens' GameState Bool
@@ -87,7 +92,7 @@ gameStateAcceleratingL = lens accelerating (\gs a -> gs { accelerating = a })
 getNewId :: GameState -> (Int, GameState)
 getNewId gs@GameState { availableId = aid } = (aid, gs { availableId = aid + 1})
 
-addEntity :: EntityType -> Vector Float -> Vector Float -> Float -> GameState -> GameState
+addEntity :: EntityType -> Position -> Velocity -> Angle -> GameState -> GameState
 addEntity typ pos vel ang gs = let
                                  (eid, gs') = getNewId gs
                                  setTyp = over gameStateEntityTypesL (M.insert eid typ)

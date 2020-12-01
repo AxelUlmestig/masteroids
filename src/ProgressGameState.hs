@@ -10,22 +10,26 @@ import           Data.Maybe      (fromJust)
 import           GameState       (EntityType (Player), GameState (..),
                                   gameStateAnglesL, gameStateEntityTypesL,
                                   gameStatePositionsL, gameStateVelocitiesL)
-import           Vector          (Vector (..), addV, calculateAngle, rotateV)
+import           Newtypes        (Acceleration (Acceleration), Angle,
+                                  Position (Position), Velocity (Velocity),
+                                  calculateAngle, rotateA, updatePosition,
+                                  updateVelocity)
+import           Vector          (Vector (Vector))
 
-playerAcceleration :: Vector Float
-playerAcceleration = Vector 0.3 0
+playerAcceleration :: Acceleration
+playerAcceleration = Acceleration $ Vector 0.3 0
 
 progressGameState :: Float -> GameState -> GameState
 progressGameState _ = foldr (.) id [updatePositions, borderPatrol', updatePlayerAngle, acceleratePlayer]
 
 updatePlayerAngle :: GameState -> GameState
 updatePlayerAngle gs = let
-                         mp = mousePosition gs :: Vector Float
+                         mp = mousePosition gs :: Position
 
                          update :: Int -> GameState -> GameState
                          update pid = let
                                         -- pp will crash if the player position is missing
-                                        pp = fromJust $ view (gameStatePositionsL . at pid) gs :: Vector Float
+                                        pp = fromJust $ view (gameStatePositionsL . at pid) gs :: Position
                                       in set (gameStateAnglesL . ix pid) (calculateAngle pp mp)
 
                          setAngles = foldr (.) id $ update <$> entities Player gs
@@ -38,9 +42,9 @@ acceleratePlayer gs = if accelerating gs
                         update :: Int -> GameState -> GameState
                         update pid = let
                                        -- playerAngle will crash if the player angle is missing
-                                       playerAngle = fromJust $ view (gameStateAnglesL . at pid) gs
-                                       acceleration = rotateV playerAngle playerAcceleration
-                                     in over (gameStateVelocitiesL . ix pid) (addV acceleration)
+                                       playerAngle = fromJust $ view (gameStateAnglesL . at pid) gs :: Angle
+                                       acceleration = rotateA playerAngle playerAcceleration :: Acceleration
+                                     in over (gameStateVelocitiesL . ix pid) (updateVelocity acceleration)
 
                         setVelocities = foldr (.) id $ update <$> entities Player gs
                       in setVelocities gs
@@ -48,7 +52,7 @@ acceleratePlayer gs = if accelerating gs
 
 borderPatrol' :: GameState -> GameState
 borderPatrol' gs = let
-                     constrainPosition (Vector x y) = Vector (constrain (gameWidth gs) x) (constrain (gameHeight gs) y)
+                     constrainPosition (Position (Vector x y)) = Position $ Vector (constrain (gameWidth gs) x) (constrain (gameHeight gs) y)
                      constrain width value          = ((value + limit) `mod'` fromIntegral width) - limit
                        where
                          limit = fromIntegral width / 2
@@ -56,8 +60,8 @@ borderPatrol' gs = let
 
 updatePositions :: GameState -> GameState
 updatePositions gs = let
-                       applyVelocity :: Int -> Vector Float -> Vector Float
-                       applyVelocity i = addV $ M.findWithDefault (Vector 0 0) i (velocities gs)
+                       applyVelocity :: Int -> Position -> Position
+                       applyVelocity i = updatePosition $ M.findWithDefault (Velocity (Vector 0 0)) i (velocities gs)
                      in over gameStatePositionsL (imap applyVelocity) gs
 
 entities :: EntityType -> GameState -> [Int]

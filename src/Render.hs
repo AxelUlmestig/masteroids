@@ -10,6 +10,7 @@ import           Assets          (Assets, asteroidSprite, fireSprite,
 import           GameState       (EntityType (Asteroid, Player), GameState,
                                   accelerating, gameStateAnglesL,
                                   gameStateEntityTypesL, gameStatePositionsL)
+import           Newtypes        (Angle (Angle), Position (Position))
 import           Vector          (Vector (Vector), addV, rotateV)
 
 render :: Assets -> GameState -> Picture
@@ -21,8 +22,8 @@ render assets gs = Pictures . fmap snd . M.toList . imap f . view gameStateEntit
 renderPlayer :: Assets -> Int -> GameState -> Picture
 renderPlayer assets eid gs = Pictures [player, fire]
   where
-    (Vector x y) = fromJust $ view (gameStatePositionsL . at eid) gs -- will crash if player doesn't have a position
-    ang = fromJust $ view (gameStateAnglesL . at eid) gs -- will crash if player doesn't have an angle
+    (Position (Vector x y)) = fromJust $ view (gameStatePositionsL . at eid) gs -- will crash if player doesn't have a position
+    (Angle ang) = fromJust $ view (gameStateAnglesL . at eid) gs -- will crash if player doesn't have an angle
     player = translate x y (rotate (-ang) (playerSprite assets))
     fire = if accelerating gs then translate x' y' (rotate (-ang) (fireSprite assets)) else Blank
       where
@@ -31,5 +32,5 @@ renderPlayer assets eid gs = Pictures [player, fire]
 renderAsteroid :: Assets -> Int -> GameState -> Picture
 renderAsteroid assets eid gs = translate x y (rotate (-ang) (asteroidSprite assets))
   where
-    (Vector x y) = fromJust $ view (gameStatePositionsL . at eid) gs -- will crash if entity doesn't have a position
-    ang = fromJust $ view (gameStateAnglesL . at eid) gs -- will crash if entity doesn't have an angle
+    (Position (Vector x y)) = fromJust $ view (gameStatePositionsL . at eid) gs -- will crash if entity doesn't have a position
+    (Angle ang) = fromJust $ view (gameStateAnglesL . at eid) gs -- will crash if entity doesn't have an angle
