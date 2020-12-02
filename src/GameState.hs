@@ -8,6 +8,7 @@ module GameState (
   gameStatePositionsL,
   gameStateVelocitiesL,
   gameStateAnglesL,
+  gameStateSpinL,
   gameStateMousePositionL,
   gameStateAcceleratingL,
   defaultWidth,
@@ -19,7 +20,8 @@ module GameState (
 import           Control.Lens    (Lens', lens, over)
 import qualified Data.Map.Strict as M
 
-import           Physics         (Angle (Angle), Position, Velocity, createV)
+import           Physics         (Angle (Angle), Position, Spin (Spin),
+                                  Velocity, createV)
 
 defaultWidth :: Int
 defaultWidth = 800
@@ -35,6 +37,7 @@ data GameState = GameState {
   positions     :: M.Map Int Position,
   velocities    :: M.Map Int Velocity,
   angles        :: M.Map Int Angle,
+  spin          :: M.Map Int Spin,
   mousePosition :: Position,
   accelerating  :: Bool
 } deriving (Eq, Show)
@@ -52,13 +55,14 @@ initGameState = let
                     positions       = M.empty,
                     velocities      = M.empty,
                     angles          = M.empty,
+                    spin            = M.empty,
                     mousePosition   = createV 0 0,
                     accelerating    = False
                   }
 
-                  addPlayer = addEntity Player (createV 0 0) (createV 0 0) (Angle 0)
-                  addAsteroid = addEntity Asteroid (createV 100 100) (createV 6 4) (Angle 0)
-                in addAsteroid $ addPlayer empty
+                  addP = addPlayer (createV 0 0) (createV 0 0) (Angle 0)
+                  addA = addAsteroid (createV 100 100) (createV 6 4) (Angle 0) (Spin 1)
+                in addA $ addP empty
 
 gameStateGameWidthL :: Lens' GameState Int
 gameStateGameWidthL = lens gameWidth (\gs gw -> gs { gameWidth = gw })
@@ -78,6 +82,9 @@ gameStateVelocitiesL = lens velocities (\gs vs -> gs { velocities = vs })
 gameStateAnglesL :: Lens' GameState (M.Map Int Angle)
 gameStateAnglesL = lens angles (\gs as -> gs { angles = as })
 
+gameStateSpinL :: Lens' GameState (M.Map Int Spin)
+gameStateSpinL = lens spin (\gs s -> gs { spin = s })
+
 gameStateMousePositionL :: Lens' GameState Position
 gameStateMousePositionL = lens mousePosition (\gs mp -> gs { mousePosition = mp })
 
@@ -87,14 +94,21 @@ gameStateAcceleratingL = lens accelerating (\gs a -> gs { accelerating = a })
 getNewId :: GameState -> (Int, GameState)
 getNewId gs@GameState { availableId = aid } = (aid, gs { availableId = aid + 1})
 
-addEntity :: EntityType -> Position -> Velocity -> Angle -> GameState -> GameState
-addEntity typ pos vel ang gs = let
+addPlayer :: Position -> Velocity -> Angle -> GameState -> GameState
+addPlayer pos vel angle = addEntity Player pos vel angle Nothing
+
+addAsteroid :: Position -> Velocity -> Angle -> Spin -> GameState -> GameState
+addAsteroid pos vel angle spi = addEntity Asteroid pos vel angle (Just spi)
+
+addEntity :: EntityType -> Position -> Velocity -> Angle -> Maybe Spin -> GameState -> GameState
+addEntity typ pos vel ang mspin gs = let
                                  (eid, gs') = getNewId gs
                                  setTyp = over gameStateEntityTypesL (M.insert eid typ)
                                  setPos = over gameStatePositionsL (M.insert eid pos)
                                  setVel = over gameStateVelocitiesL (M.insert eid vel)
                                  setAng = over gameStateAnglesL (M.insert eid ang)
-                               in setTyp $ setPos $ setVel $ setAng gs'
+                                 setSpi = maybe id (over gameStateSpinL . M.insert eid) mspin
+                               in setTyp $ setPos $ setVel $ setAng $ setSpi gs'
 
 destroyEntity :: Int -> GameState -> GameState
 destroyEntity eid = let

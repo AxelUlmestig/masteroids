@@ -5,9 +5,11 @@ module Physics (
   Position,
   Velocity,
   Angle(..),
+  Spin(..),
   Acceleration,
   updatePosition,
-  updateVelocity
+  updateVelocity,
+  spinAngle
 ) where
 
 data Vector' = Vector' Float Float
@@ -31,6 +33,7 @@ newtype Position = Position Vector' deriving (Eq, Show)
 newtype Velocity = Velocity Vector' deriving (Eq, Show)
 newtype Acceleration = Acceleration Vector' deriving (Eq, Show)
 newtype Angle = Angle Float deriving (Eq, Show)
+newtype Spin = Spin Float deriving (Eq, Show)
 
 instance Vector Position where
   createV x y = Position $ Vector' x y
@@ -56,3 +59,6 @@ updatePosition (Velocity v) (Position p) = Position $ addV v p
 
 updateVelocity :: Acceleration -> Velocity -> Velocity
 updateVelocity (Acceleration v) (Velocity p) = Velocity $ addV v p
+
+spinAngle :: Spin -> Angle -> Angle
+spinAngle (Spin s) (Angle a) = Angle (a + s)

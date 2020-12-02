@@ -9,16 +9,17 @@ import           Data.Maybe      (fromJust)
 
 import           GameState       (EntityType (Player), GameState (..),
                                   gameStateAnglesL, gameStateEntityTypesL,
-                                  gameStatePositionsL, gameStateVelocitiesL)
+                                  gameStatePositionsL, gameStateSpinL,
+                                  gameStateVelocitiesL)
 import           Physics         (Acceleration, Angle, Position, calculateAngle,
-                                  createV, rotateV, toPair, updatePosition,
-                                  updateVelocity)
+                                  createV, rotateV, spinAngle, toPair,
+                                  updatePosition, updateVelocity)
 
 playerAcceleration :: Acceleration
 playerAcceleration = createV 0.3 0
 
 progressGameState :: Float -> GameState -> GameState
-progressGameState _ = foldr (.) id [updatePositions, borderPatrol', updatePlayerAngle, acceleratePlayer]
+progressGameState _ = foldr (.) id [updatePositions, borderPatrol', updatePlayerAngle, acceleratePlayer, updateAngles]
 
 updatePlayerAngle :: GameState -> GameState
 updatePlayerAngle gs = let
@@ -63,6 +64,11 @@ updatePositions :: GameState -> GameState
 updatePositions gs = let
                        applyVelocities = foldr (.) id . imap (flip M.adjust) . fmap updatePosition . view gameStateVelocitiesL
                      in over gameStatePositionsL (applyVelocities gs) gs
+
+updateAngles :: GameState -> GameState
+updateAngles gs = let
+                    applySpin = foldr (.) id . imap (flip M.adjust) . fmap spinAngle . view gameStateSpinL
+                  in over gameStateAnglesL (applySpin gs) gs
 
 entities :: EntityType -> GameState -> [Int]
 entities et = fmap fst . filter ((==et) . snd) . M.toList . view gameStateEntityTypesL
