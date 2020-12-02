@@ -54,7 +54,7 @@ borderPatrol' gs = let
                        where
                          (x, y) = toPair pos
 
-                     constrain width value          = ((value + limit) `mod'` fromIntegral width) - limit
+                     constrain width value = ((value + limit) `mod'` fromIntegral width) - limit
                        where
                          limit = fromIntegral width / 2
                    in over gameStatePositionsL (fmap constrainPosition) gs
