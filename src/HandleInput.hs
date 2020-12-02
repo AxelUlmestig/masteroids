@@ -6,16 +6,14 @@ import           Graphics.Gloss.Interface.Pure.Game (Event (EventKey, EventMotio
                                                      KeyState (Down, Up),
                                                      SpecialKey (KeySpace))
 
-import           GameState                          (GameState,
-                                                     Position (Position),
-                                                     gameHeight,
+import           GameState                          (GameState, gameHeight,
                                                      gameStateAcceleratingL,
                                                      gameStateMousePositionL,
                                                      gameWidth)
-import           Vector                             (Vector (..))
+import           Physics                            (createV)
 
 handleInput :: Event -> GameState -> GameState
-handleInput (EventMotion (mx, my)) gs                    = set gameStateMousePositionL (Position (Vector mx my)) gs
+handleInput (EventMotion (mx, my)) gs                    = set gameStateMousePositionL (createV mx my) gs
 handleInput (EventKey (SpecialKey KeySpace) Down _ _) gs = set gameStateAcceleratingL True gs
 handleInput (EventKey (SpecialKey KeySpace) Up _ _) gs   = set gameStateAcceleratingL False gs
 handleInput (EventResize (width, height)) gs             = gs { gameWidth = width, gameHeight = height }

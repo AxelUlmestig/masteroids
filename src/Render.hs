@@ -10,8 +10,8 @@ import           Assets          (Assets, asteroidSprite, fireSprite,
 import           GameState       (EntityType (Asteroid, Player), GameState,
                                   accelerating, gameStateAnglesL,
                                   gameStateEntityTypesL, gameStatePositionsL)
-import           Newtypes        (Angle (Angle), Position (Position))
-import           Vector          (Vector (Vector), addV, rotateV)
+import           Physics         (Angle (Angle), Vector' (Vector'), addV,
+                                  rotateV, toPair)
 
 render :: Assets -> GameState -> Picture
 render assets gs = Pictures . fmap snd . M.toList . imap f . view gameStateEntityTypesL $ gs
@@ -22,15 +22,15 @@ render assets gs = Pictures . fmap snd . M.toList . imap f . view gameStateEntit
 renderPlayer :: Assets -> Int -> GameState -> Picture
 renderPlayer assets eid gs = Pictures [player, fire]
   where
-    (Position (Vector x y)) = fromJust $ view (gameStatePositionsL . at eid) gs -- will crash if player doesn't have a position
+    (x, y) = toPair $ fromJust $ view (gameStatePositionsL . at eid) gs -- will crash if player doesn't have a position
     (Angle ang) = fromJust $ view (gameStateAnglesL . at eid) gs -- will crash if player doesn't have an angle
     player = translate x y (rotate (-ang) (playerSprite assets))
     fire = if accelerating gs then translate x' y' (rotate (-ang) (fireSprite assets)) else Blank
       where
-        (Vector x' y') = addV (Vector x y) (rotateV (180 + ang) (Vector 50 0))
+        (Vector' x' y') = addV (Vector' x y) (rotateV (Angle (180 + ang)) (Vector' 50 0))
 
 renderAsteroid :: Assets -> Int -> GameState -> Picture
 renderAsteroid assets eid gs = translate x y (rotate (-ang) (asteroidSprite assets))
   where
-    (Position (Vector x y)) = fromJust $ view (gameStatePositionsL . at eid) gs -- will crash if entity doesn't have a position
+    (x, y) = toPair $ fromJust $ view (gameStatePositionsL . at eid) gs -- will crash if entity doesn't have a position
     (Angle ang) = fromJust $ view (gameStateAnglesL . at eid) gs -- will crash if entity doesn't have an angle

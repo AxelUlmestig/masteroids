@@ -1,9 +1,6 @@
 module GameState (
   GameState(..),
   EntityType(..),
-  Position(..),
-  Velocity(..),
-  Angle(..),
   initGameState,
   gameStateGameWidthL,
   gameStateGameHeightL,
@@ -22,9 +19,7 @@ module GameState (
 import           Control.Lens    (Lens', lens, over)
 import qualified Data.Map.Strict as M
 
-import           Newtypes        (Angle (Angle), Position (Position),
-                                  Velocity (Velocity))
-import           Vector          (Vector (..))
+import           Physics         (Angle (Angle), Position, Velocity, createV)
 
 defaultWidth :: Int
 defaultWidth = 800
@@ -57,12 +52,12 @@ initGameState = let
                     positions       = M.empty,
                     velocities      = M.empty,
                     angles          = M.empty,
-                    mousePosition   = Position (Vector 0 0),
+                    mousePosition   = createV 0 0,
                     accelerating    = False
                   }
 
-                  addPlayer = addEntity Player (Position (Vector 0 0)) (Velocity (Vector 0 0)) (Angle 0)
-                  addAsteroid = addEntity Asteroid (Position (Vector 100 100)) (Velocity (Vector 6 4)) (Angle 0)
+                  addPlayer = addEntity Player (createV 0 0) (createV 0 0) (Angle 0)
+                  addAsteroid = addEntity Asteroid (createV 100 100) (createV 6 4) (Angle 0)
                 in addAsteroid $ addPlayer empty
 
 gameStateGameWidthL :: Lens' GameState Int
