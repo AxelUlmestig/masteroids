@@ -61,9 +61,8 @@ borderPatrol' gs = let
 
 updatePositions :: GameState -> GameState
 updatePositions gs = let
-                       applyVelocity :: Int -> Position -> Position
-                       applyVelocity i = updatePosition $ M.findWithDefault (createV 0 0) i (velocities gs)
-                     in over gameStatePositionsL (imap applyVelocity) gs
+                       applyVelocities = foldr (.) id . imap (flip M.adjust) . fmap updatePosition . view gameStateVelocitiesL
+                     in over gameStatePositionsL (applyVelocities gs) gs
 
 entities :: EntityType -> GameState -> [Int]
 entities et = fmap fst . filter ((==et) . snd) . M.toList . view gameStateEntityTypesL
