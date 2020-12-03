@@ -11,15 +11,16 @@ import           GameState       (EntityType (Player), GameState (..),
                                   gameStateAnglesL, gameStateEntityTypesL,
                                   gameStatePositionsL, gameStateSpinL,
                                   gameStateVelocitiesL)
-import           Physics         (Acceleration, Angle, Position, calculateAngle,
-                                  createV, rotateV, spinAngle, toPair,
-                                  updatePosition, updateVelocity)
+import           Physics         (Acceleration, Angle, Position,
+                                  applyAcceleration, applyVelocity,
+                                  calculateAngle, createV, rotateV, spinAngle,
+                                  toPair)
 
 playerAcceleration :: Acceleration
 playerAcceleration = createV 0.3 0
 
 progressGameState :: Float -> GameState -> GameState
-progressGameState _ = foldr (.) id [updatePositions, borderPatrol', updatePlayerAngle, acceleratePlayer, updateAngles]
+progressGameState _ = foldr (.) id [applyVelocitys, borderPatrol', updatePlayerAngle, acceleratePlayer, updateAngles]
 
 updatePlayerAngle :: GameState -> GameState
 updatePlayerAngle gs = let
@@ -43,7 +44,7 @@ acceleratePlayer gs = if accelerating gs
                                        -- playerAngle will crash if the player angle is missing
                                        playerAngle = fromJust $ view (gameStateAnglesL . at pid) gs :: Angle
                                        acceleration = rotateV playerAngle playerAcceleration :: Acceleration
-                                     in over (gameStateVelocitiesL . ix pid) (updateVelocity acceleration)
+                                     in over (gameStateVelocitiesL . ix pid) (applyAcceleration acceleration)
 
                         setVelocities = foldr (.) id $ update <$> entities Player gs
                       in setVelocities gs
@@ -60,9 +61,9 @@ borderPatrol' gs = let
                          limit = fromIntegral width / 2
                    in over gameStatePositionsL (fmap constrainPosition) gs
 
-updatePositions :: GameState -> GameState
-updatePositions gs = let
-                       applyVelocities = foldr (.) id . imap (flip M.adjust) . fmap updatePosition . view gameStateVelocitiesL
+applyVelocitys :: GameState -> GameState
+applyVelocitys gs = let
+                       applyVelocities = foldr (.) id . imap (flip M.adjust) . fmap applyVelocity . view gameStateVelocitiesL
                      in over gameStatePositionsL (applyVelocities gs) gs
 
 updateAngles :: GameState -> GameState

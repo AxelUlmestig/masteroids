@@ -1,14 +1,14 @@
 module Physics (
-  Vector'(..),
-  addV,
   Vector(..),
   Position,
   Velocity,
+  Acceleration,
+  Distance,
   Angle(..),
   Spin(..),
-  Acceleration,
-  updatePosition,
-  updateVelocity,
+  applyVelocity,
+  applyAcceleration,
+  movePosition,
   spinAngle
 ) where
 
@@ -32,6 +32,7 @@ class Vector a where
 newtype Position = Position Vector' deriving (Eq, Show)
 newtype Velocity = Velocity Vector' deriving (Eq, Show)
 newtype Acceleration = Acceleration Vector' deriving (Eq, Show)
+newtype Distance = Distance Vector' deriving (Eq, Show)
 newtype Angle = Angle Float deriving (Eq, Show)
 newtype Spin = Spin Float deriving (Eq, Show)
 
@@ -47,6 +48,10 @@ instance Vector Acceleration where
   createV x y = Acceleration $ Vector' x y
   toPair (Acceleration (Vector' x y)) = (x, y)
 
+instance Vector Distance where
+  createV x y = Distance $ Vector' x y
+  toPair (Distance (Vector' x y)) = (x, y)
+
 instance Vector Vector' where
   createV = Vector'
   toPair (Vector' x y) = (x, y)
@@ -54,11 +59,14 @@ instance Vector Vector' where
 addV :: Vector' -> Vector' -> Vector'
 addV (Vector' x y) (Vector' x' y') = Vector' (x + x') (y + y')
 
-updatePosition :: Velocity -> Position -> Position
-updatePosition (Velocity v) (Position p) = Position $ addV v p
+movePosition :: Distance -> Position -> Position
+movePosition (Distance d) (Position p) = Position $ addV d p
 
-updateVelocity :: Acceleration -> Velocity -> Velocity
-updateVelocity (Acceleration v) (Velocity p) = Velocity $ addV v p
+applyVelocity :: Velocity -> Position -> Position
+applyVelocity (Velocity v) (Position p) = Position $ addV v p
+
+applyAcceleration :: Acceleration -> Velocity -> Velocity
+applyAcceleration (Acceleration v) (Velocity p) = Velocity $ addV v p
 
 spinAngle :: Spin -> Angle -> Angle
 spinAngle (Spin s) (Angle a) = Angle (a + s)
