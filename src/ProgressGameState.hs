@@ -2,25 +2,28 @@
 
 module ProgressGameState (progressGameState) where
 
-import           Control.Lens    (at, imap, ix, over, set, view)
-import           Data.Fixed      (mod')
-import qualified Data.Map.Strict as M
-import           Data.Maybe      (fromJust)
+import           Control.Lens                 (at, imap, ix, over, set, view)
+import           Data.Fixed                   (mod')
+import qualified Data.Map.Strict              as M
+import           Data.Maybe                   (fromJust)
 
-import           GameState       (EntityType (Player), GameState (..),
-                                  gameStateAnglesL, gameStateEntityTypesL,
-                                  gameStatePositionsL, gameStateSpinL,
-                                  gameStateVelocitiesL)
-import           Physics         (Acceleration, Angle, Position,
-                                  applyAcceleration, applyVelocity,
-                                  calculateAngle, createV, rotateV, spinAngle,
-                                  toPair)
+import           GameState                    (EntityType (Player),
+                                               GameState (..), gameStateAnglesL,
+                                               gameStateEntityTypesL,
+                                               gameStatePositionsL,
+                                               gameStateSpinL,
+                                               gameStateVelocitiesL)
+import           Physics                      (Acceleration, Angle, Position,
+                                               applyAcceleration, applyVelocity,
+                                               calculateAngle, createV, rotateV,
+                                               spinAngle, toPair)
+import           ProgressGameState.Collisions (handleCollisions)
 
 playerAcceleration :: Acceleration
 playerAcceleration = createV 0.3 0
 
 progressGameState :: Float -> GameState -> GameState
-progressGameState _ = foldr (.) id [applyVelocitys, borderPatrol', updatePlayerAngle, acceleratePlayer, updateAngles]
+progressGameState _ = foldr (.) id [applyVelocitys, borderPatrol', updatePlayerAngle, acceleratePlayer, updateAngles, handleCollisions]
 
 updatePlayerAngle :: GameState -> GameState
 updatePlayerAngle gs = let

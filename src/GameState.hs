@@ -61,7 +61,7 @@ initGameState = let
                   }
 
                   addP = addPlayer (createV 0 0) (createV 0 0) (Angle 0)
-                  addA = addAsteroid (createV 100 100) (createV 6 4) (Angle 0) (Spin 1)
+                  addA = addAsteroid (createV 100 100) (createV 0 0) (Angle 0) (Spin 1)
                 in addA $ addP empty
 
 gameStateGameWidthL :: Lens' GameState Int
