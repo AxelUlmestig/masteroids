@@ -31,6 +31,13 @@ class Vector a where
                            (x1, y1) = toPair v1
                            (x2, y2) = toPair v2
                          in Angle $ atan2 (y2 - y1) (x2 - x1) * 180 / pi
+  addV :: a -> a -> a
+  addV v1 v2 = let
+                 (x1, y1) = toPair v1
+                 (x2, y2) = toPair v2
+               in createV (x1 + x2) (y1 + y2)
+  subtractV :: a -> a -> a
+  subtractV = addV . scaleV (-1)
   absV :: a -> Float
   absV v = let
              (x, y) = toPair v
@@ -69,29 +76,29 @@ instance Vector Vector' where
   createV = Vector'
   toPair (Vector' x y) = (x, y)
 
-addV :: Vector' -> Vector' -> Vector'
-addV (Vector' x y) (Vector' x' y') = Vector' (x + x') (y + y')
+addV' :: Vector' -> Vector' -> Vector'
+addV' (Vector' x y) (Vector' x' y') = Vector' (x + x') (y + y')
 
 scaleV' :: Float -> Vector' -> Vector'
 scaleV' k (Vector' x y) = Vector' (k * x) (k * y)
 
 subtractV' :: Vector' -> Vector' -> Vector'
-subtractV' v1 = addV (scaleV' (-1) v1)
+subtractV' v1 = addV' (scaleV' (-1) v1)
 
 dotProduct :: Vector' -> Vector' -> Float
 dotProduct (Vector' x1 y1) (Vector' x2 y2) = x1 * x2 + y1 * y2
 
 movePosition :: Distance -> Position -> Position
-movePosition (Distance d) (Position p) = Position $ addV d p
+movePosition (Distance d) (Position p) = Position $ addV' d p
 
 distance :: Position -> Position -> Distance
 distance (Position p1) (Position p2) = Distance $ subtractV' p1 p2
 
 applyVelocity :: Velocity -> Position -> Position
-applyVelocity (Velocity v) (Position p) = Position $ addV v p
+applyVelocity (Velocity v) (Position p) = Position $ addV' v p
 
 applyAcceleration :: Acceleration -> Velocity -> Velocity
-applyAcceleration (Acceleration v) (Velocity p) = Velocity $ addV v p
+applyAcceleration (Acceleration v) (Velocity p) = Velocity $ addV' v p
 
 subtractVelocity :: Velocity -> Velocity -> Velocity
 subtractVelocity (Velocity v1) (Velocity v2) = Velocity $ subtractV' v1 v2
@@ -104,5 +111,8 @@ bounce (p1, Velocity v1, m1) (p2, Velocity v2, m2) = let
                                                        (Distance direction) = normalizeV $ distance p1 p2
                                                        a = (2 / (1 / m1 + 1 / m2)) * dotProduct direction (subtractV' v2 v1) -- 'a' in https://www.sjsu.edu/faculty/watkins/collision.htm
                                                        v1' = subtractV' (scaleV' (a / m1) direction) v1
-                                                       v2' = addV       (scaleV' (a / m2) direction) v2
-                                                     in (Velocity v1', Velocity v2')
+                                                       v2' = addV'       (scaleV' (a / m2) direction) v2
+                                                     in if p1 == p2 then -- please quickcheck
+                                                       (Velocity v1, Velocity v2)
+                                                     else
+                                                       (Velocity v1', Velocity v2')
