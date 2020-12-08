@@ -23,7 +23,13 @@ executable masteroids
                        GameState,
                        HandleInput,
                        ProgressGameState,
-                       Render
+                       Render,
+                       Systems.AcceleratePlayer,
+                       Systems.ApplySpin,
+                       Systems.ApplyVelocities,
+                       Systems.BorderPatrol,
+                       Systems.HandleCollisions,
+                       Systems.SetPlayerAngle
   build-depends:       base >= 4.7 && < 5,
                        gloss >= 1.13,
                        lens,

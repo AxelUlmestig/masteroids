@@ -1,4 +1,4 @@
-module ProgressGameState.Collisions (handleCollisions) where
+module Systems.HandleCollisions (handleCollisions) where
 
 import           Control.Lens    (at, over, view)
 import qualified Data.Map.Strict as M
