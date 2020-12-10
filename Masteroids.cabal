@@ -44,5 +44,6 @@ test-suite properties
                        test-framework-quickcheck2,
                        QuickCheck >= 2.0
   default-language:    Haskell2010
-  ghc-options: -threaded -rtsopts -Wall
-  other-modules:       Physics
+  ghc-options: -threaded -rtsopts -Wall -Wno-orphans
+  other-modules:       Physics,
+                       Properties.Physics

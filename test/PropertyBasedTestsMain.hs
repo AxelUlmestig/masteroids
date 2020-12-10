@@ -1,12 +1,10 @@
 module Main where
 
-import           Test.Framework                       (defaultMain, testGroup)
-import           Test.Framework.Providers.QuickCheck2 (testProperty)
-import           Test.QuickCheck                      (quickCheck)
+import           Test.Framework     (defaultMain)
 
-import           Properties.Physics                   (properties)
+import           Properties.Physics (physicsProperties)
 
 main :: IO ()
 main = defaultMain [
-         testGroup "properties" $ fmap (uncurry testProperty) properties
+         physicsProperties
        ]
