@@ -1,8 +1,8 @@
 module Render (render) where
 
-import           Control.Lens    (at, imap, view)
+import           Control.Lens    (at, view)
 import qualified Data.Map.Strict as M
-import           Data.Maybe      (fromJust)
+import           Data.Maybe      (mapMaybe)
 import           Graphics.Gloss  (Picture (Blank, Pictures), rotate, translate)
 
 import           Assets          (Assets, asteroidSprite, fireSprite,
@@ -10,28 +10,31 @@ import           Assets          (Assets, asteroidSprite, fireSprite,
 import           GameState       (EntityType (Asteroid, Player), GameState,
                                   accelerating, gameStateAnglesL,
                                   gameStateEntityTypesL, gameStatePositionsL)
-import           Physics         (Angle (Angle), createV, movePosition, rotateV,
-                                  toPair)
+import           Physics         (Angle (Angle), Position, createV,
+                                  movePosition, rotateV, toPair)
+
+data RenderData = PlayerRender Position Angle Bool
+                | AsteroidRender Position Angle
 
 render :: Assets -> GameState -> Picture
-render assets gs = Pictures . fmap snd . M.toList . imap f . view gameStateEntityTypesL $ gs
-  where
-    f eid Player   = renderPlayer assets eid gs
-    f eid Asteroid = renderAsteroid assets eid gs
+render assets = Pictures . fmap (renderEntity assets) . allRenderData
 
-renderPlayer :: Assets -> Int -> GameState -> Picture
-renderPlayer assets eid gs = Pictures [player, fire]
+allRenderData :: GameState -> [RenderData]
+allRenderData gs = let
+                     mPos eid           = view (gameStatePositionsL . at eid) gs
+                     mAng eid           = view (gameStateAnglesL . at eid) gs
+                     f (eid, Player)    = PlayerRender <$> mPos eid <*> mAng eid <*> return (accelerating gs)
+                     f (eid, Asteroid)  = AsteroidRender <$> mPos eid <*> mAng eid
+                   in mapMaybe f . M.toList . view gameStateEntityTypesL $ gs
+
+renderEntity :: Assets -> RenderData -> Picture
+renderEntity assets (PlayerRender pos (Angle ang) acc) = Pictures [player, fire]
   where
-    pos = fromJust $ view (gameStatePositionsL . at eid) gs -- will crash if player doesn't have a position
     (x, y) = toPair pos
-    (Angle ang) = fromJust $ view (gameStateAnglesL . at eid) gs -- will crash if player doesn't have an angle
     player = translate x y (rotate (-ang) (playerSprite assets))
-    fire = if accelerating gs then translate x' y' (rotate (-ang) (fireSprite assets)) else Blank
+    fire = if acc then translate x' y' (rotate (-ang) (fireSprite assets)) else Blank
       where
         (x', y') = toPair $ movePosition (rotateV (Angle (180 + ang)) (createV 50 0)) pos
-
-renderAsteroid :: Assets -> Int -> GameState -> Picture
-renderAsteroid assets eid gs = translate x y (rotate (-ang) (asteroidSprite assets))
+renderEntity assets (AsteroidRender pos (Angle ang)) = translate x y (rotate (-ang) (asteroidSprite assets))
   where
-    (x, y) = toPair $ fromJust $ view (gameStatePositionsL . at eid) gs -- will crash if entity doesn't have a position
-    (Angle ang) = fromJust $ view (gameStateAnglesL . at eid) gs -- will crash if entity doesn't have an angle
+    (x, y) = toPair pos
