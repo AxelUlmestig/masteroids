@@ -18,7 +18,7 @@ data RenderData = PlayerRender Position Angle Bool
                 | AsteroidRender Position Angle
 
 render :: Assets -> GameState -> Picture
-render assets gs = offsetGameWindow gs . Pictures . fmap (renderEntity assets) . allRenderData $ gs
+render assets gs = renderLoopedSpace gs $ offsetGameWindow gs $ Pictures $ renderEntity assets <$> allRenderData gs
 
 allRenderData :: GameState -> [RenderData]
 allRenderData gs = let
@@ -43,3 +43,10 @@ renderEntity assets (AsteroidRender pos (Angle ang)) = translate x y (rotate (-a
 -- Gloss puts the origin in the middle of the screen by default. This puts it in the lower left corner
 offsetGameWindow :: GameState -> Picture -> Picture
 offsetGameWindow gs = translate (fromIntegral (gameWidth gs) * (-0.5)) (fromIntegral (gameHeight gs) * (-0.5))
+
+-- Render the edges of entities as they "wrap around" the edges of the map
+renderLoopedSpace :: GameState -> Picture -> Picture
+renderLoopedSpace gs pic = let
+                             xMax = fromIntegral $ gameWidth gs
+                             yMax = fromIntegral $ gameHeight gs
+                           in Pictures $ translate <$> [-xMax, 0, xMax] <*> [-yMax, 0, yMax] <*> return pic
