@@ -33,7 +33,7 @@ massGenerator = arbitrary `suchThat` (>0.0)
 prop_MomentumConserved :: BounceData -> BounceData -> Bool
 prop_MomentumConserved (BounceData x1@(_, v1, m1)) (BounceData x2@(_, v2, m2)) =
   let
-    (v1', v2')      = bounce x1 x2
+    (v1', v2')      = bounce (800, 800) x1 x2
     momentumBefore  = scaleV m1 v1  `addV` scaleV m2 v2
     momentumAfter   = scaleV m1 v1' `addV` scaleV m2 v2'
     momentumDiff    = absV $ momentumAfter `subtractV` momentumBefore
@@ -42,7 +42,7 @@ prop_MomentumConserved (BounceData x1@(_, v1, m1)) (BounceData x2@(_, v2, m2)) =
 prop_EnergyConserved :: BounceData -> BounceData -> Bool
 prop_EnergyConserved (BounceData x1@(_, v1, m1)) (BounceData x2@(_, v2, m2)) =
   let
-    (v1', v2')    = bounce x1 x2
+    (v1', v2')    = bounce (800, 800) x1 x2
     energyBefore  = m1 * absV v1 ** 2  + m2 * absV v2 ** 2
     energyAfter   = m1 * absV v1' ** 2 + m2 * absV v2' ** 2
   in energyBefore `floatEqual` energyAfter

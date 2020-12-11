@@ -91,8 +91,20 @@ dotProduct (Vector' x1 y1) (Vector' x2 y2) = x1 * x2 + y1 * y2
 movePosition :: Distance -> Position -> Position
 movePosition (Distance d) (Position p) = Position $ addV' d p
 
-distance :: Position -> Position -> Distance
-distance (Position p1) (Position p2) = Distance $ subtractV' p1 p2
+distance :: (Float, Float) -> Position -> Position -> Distance
+distance (xMax, yMax) (Position (Vector' x1 y1)) (Position (Vector' x2 y2)) = let
+    dx = smallestModulusDistance xMax x1 x2
+    dy = smallestModulusDistance yMax y1 y2
+  in createV dx dy
+
+smallestModulusDistance :: Float -> Float -> Float -> Float
+smallestModulusDistance xMax x1 x2 = let
+                    small = min x1 x2
+                    big = max x1 x2
+                  in signum (x2 - x1) * minAbs (big - small) (big - small - xMax)
+
+minAbs :: Float -> Float -> Float
+minAbs a b = if abs a < abs b then a else b
 
 applyVelocity :: Velocity -> Position -> Position
 applyVelocity (Velocity v) (Position p) = Position $ addV' v p
@@ -106,9 +118,9 @@ subtractVelocity (Velocity v1) (Velocity v2) = Velocity $ subtractV' v1 v2
 spinAngle :: Spin -> Angle -> Angle
 spinAngle (Spin s) (Angle a) = Angle (a + s)
 
-bounce :: (Position, Velocity, Float) -> (Position, Velocity, Float) -> (Velocity, Velocity)
-bounce (p1, Velocity v1, m1) (p2, Velocity v2, m2) = let
-                                                       (Distance direction) = normalizeV $ distance p1 p2
+bounce :: (Float, Float) -> (Position, Velocity, Float) -> (Position, Velocity, Float) -> (Velocity, Velocity)
+bounce border (p1, Velocity v1, m1) (p2, Velocity v2, m2) = let
+                                                       (Distance direction) = normalizeV $ distance border p1 p2
                                                        a = (2 / (1 / m1 + 1 / m2)) * dotProduct direction (subtractV' v2 v1) -- 'a' in https://www.sjsu.edu/faculty/watkins/collision.htm
                                                        v1' = subtractV' (scaleV' (a / m1) direction) v1
                                                        v2' = addV'       (scaleV' (a / m2) direction) v2
