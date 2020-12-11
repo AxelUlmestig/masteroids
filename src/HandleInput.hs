@@ -12,8 +12,14 @@ import           GameState                          (GameState, gameHeight,
                                                      gameWidth)
 import           Physics                            (createV)
 
+-- Gloss puts the origin in the middle of the screen by default. The logic
+-- thinks that it's in the bottom left. The EventMotion event is offset to
+-- accomodate this
 handleInput :: Event -> GameState -> GameState
-handleInput (EventMotion (mx, my)) gs                    = set gameStateMousePositionL (createV mx my) gs
+handleInput (EventMotion (mx, my)) gs                    = set gameStateMousePositionL (createV mx' my') gs
+                                                             where
+                                                               mx' = mx + fromIntegral (gameWidth gs) / 2
+                                                               my' = my + fromIntegral (gameHeight gs) / 2
 handleInput (EventKey (SpecialKey KeySpace) Down _ _) gs = set gameStateAcceleratingL True gs
 handleInput (EventKey (SpecialKey KeySpace) Up _ _) gs   = set gameStateAcceleratingL False gs
 handleInput (EventResize (width, height)) gs             = gs { gameWidth = width, gameHeight = height }

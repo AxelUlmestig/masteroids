@@ -60,7 +60,7 @@ initGameState = let
                     accelerating    = False
                   }
 
-                  addP = addPlayer (createV 0 0) (createV 0 0) (Angle 0)
+                  addP = addPlayer (createV 400 400) (createV 0 0) (Angle 0)
                   addA = addAsteroid (createV 100 100) (createV 0 0) (Angle 0) (Spin 1)
                 in addA $ addP empty
 

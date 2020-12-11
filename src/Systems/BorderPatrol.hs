@@ -9,11 +9,9 @@ import           Physics      (createV, toPair)
 
 borderPatrol :: GameState -> GameState
 borderPatrol gs = let
-                     constrainPosition pos = createV (constrain (gameWidth gs) x) (constrain (gameHeight gs) y)
-                       where
-                         (x, y) = toPair pos
-
-                     constrain width value = ((value + limit) `mod'` fromIntegral width) - limit
-                       where
-                         limit = fromIntegral width / 2
+                     constrainPosition pos = createV (x `mod'` width) (y `mod'` height)
+                      where
+                        (x, y)  = toPair pos :: (Float, Float)
+                        width   = fromIntegral (gameWidth gs) :: Float
+                        height  = fromIntegral (gameHeight gs) :: Float
                    in over gameStatePositionsL (fmap constrainPosition) gs

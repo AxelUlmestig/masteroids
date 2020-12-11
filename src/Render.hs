@@ -8,8 +8,9 @@ import           Graphics.Gloss  (Picture (Blank, Pictures), rotate, translate)
 import           Assets          (Assets, asteroidSprite, fireSprite,
                                   playerSprite)
 import           GameState       (EntityType (Asteroid, Player), GameState,
-                                  accelerating, gameStateAnglesL,
-                                  gameStateEntityTypesL, gameStatePositionsL)
+                                  accelerating, gameHeight, gameStateAnglesL,
+                                  gameStateEntityTypesL, gameStatePositionsL,
+                                  gameWidth)
 import           Physics         (Angle (Angle), Position, createV,
                                   movePosition, rotateV, toPair)
 
@@ -17,7 +18,7 @@ data RenderData = PlayerRender Position Angle Bool
                 | AsteroidRender Position Angle
 
 render :: Assets -> GameState -> Picture
-render assets = Pictures . fmap (renderEntity assets) . allRenderData
+render assets gs = offsetGameWindow gs . Pictures . fmap (renderEntity assets) . allRenderData $ gs
 
 allRenderData :: GameState -> [RenderData]
 allRenderData gs = let
@@ -38,3 +39,7 @@ renderEntity assets (PlayerRender pos (Angle ang) acc) = Pictures [player, fire]
 renderEntity assets (AsteroidRender pos (Angle ang)) = translate x y (rotate (-ang) (asteroidSprite assets))
   where
     (x, y) = toPair pos
+
+-- Gloss puts the origin in the middle of the screen by default. This puts it in the lower left corner
+offsetGameWindow :: GameState -> Picture -> Picture
+offsetGameWindow gs = translate (fromIntegral (gameWidth gs) * (-0.5)) (fromIntegral (gameHeight gs) * (-0.5))
