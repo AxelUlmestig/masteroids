@@ -12,8 +12,13 @@ jobs:
             apt update
             apt install -y libglu1-mesa-dev freeglut3-dev mesa-common-dev
       - run:
-          name: Test
-          command: stack test --system-ghc
+          name: Build dependecies
+          command: stack build --system-ghc --only-dependencies
       - run:
           name: Build
           command: stack build --system-ghc --local-bin-path=. --copy-bins
+      - run:
+          name: Test
+          command: stack test --system-ghc
+      - store_artifacts:
+          path: masteroids
