@@ -24,6 +24,8 @@ jobs:
           key: dependecies-cache-v1-{{ checksum "Masteroids.cabal" }} # TODO: use stack.yaml.lock
           paths:
             - .stack-work
+            - ~/.cabal
+            - ~/.stack
       - run:
           name: Build
           command: stack build --system-ghc --local-bin-path=. --copy-bins
