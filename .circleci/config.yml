@@ -3,9 +3,14 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: haskell:8.8.3
+      - image: haskell:8.8.4
     steps:
       - checkout
+      - run:
+          name: Install OpenGL
+          command: |
+            apt update
+            apt install -y libglu1-mesa-dev freeglut3-dev mesa-common-dev
       - run:
           name: Test
           command: stack test --system-ghc
