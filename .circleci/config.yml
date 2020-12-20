@@ -7,11 +7,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Configure Stack to use System GHC
-          command: stack config set system-ghc --global true
-      - run:
           name: Test
-          command: stack test
+          command: stack test --system-ghc
       - run:
           name: Build
-          command: stack build --local-bin-path=. --copy-bins
+          command: stack build --system-ghc --local-bin-path=. --copy-bins
