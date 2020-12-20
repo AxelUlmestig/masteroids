@@ -1,0 +1,36 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: haskell:8.8.4
+    steps:
+      - checkout
+      - restore_cache:
+          keys: 
+            - dependecies-cache-v2-{{ checksum "Masteroids.cabal" }} # TODO: use stack.yaml.lock
+      - run:
+          name: Install OpenGL
+          command: |
+            apt update
+            apt install -y libglu1-mesa-dev freeglut3-dev mesa-common-dev
+      - run:
+          name: Build dependecies
+          command: stack build --system-ghc --only-dependencies
+      - run:
+          name: Build test dependecies
+          command: stack build --test --system-ghc --only-dependencies
+      - save_cache:
+          key: dependecies-cache-v2-{{ checksum "Masteroids.cabal" }} # TODO: use stack.yaml.lock
+          paths:
+            - .stack-work
+            - ~/.cabal
+            - ~/.stack
+      - run:
+          name: Build
+          command: stack build --system-ghc --local-bin-path=. --copy-bins
+      - run:
+          name: Test
+          command: stack test --system-ghc
+      - store_artifacts:
+          path: masteroids
