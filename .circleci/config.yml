@@ -8,7 +8,7 @@ jobs:
       - checkout
       - restore_cache:
           keys: 
-            - dependecies-cache-v1-{{ checksum "Masteroids.cabal" }} # TODO: use stack.yaml.lock
+            - dependecies-cache-v2-{{ checksum "Masteroids.cabal" }} # TODO: use stack.yaml.lock
       - run:
           name: Install OpenGL
           command: |
@@ -21,7 +21,7 @@ jobs:
           name: Build test dependecies
           command: stack build --test --system-ghc --only-dependencies
       - save_cache:
-          key: dependecies-cache-v1-{{ checksum "Masteroids.cabal" }} # TODO: use stack.yaml.lock
+          key: dependecies-cache-v2-{{ checksum "Masteroids.cabal" }} # TODO: use stack.yaml.lock
           paths:
             - .stack-work
             - ~/.cabal
