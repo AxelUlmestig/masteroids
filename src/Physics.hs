@@ -6,6 +6,8 @@ module Physics (
   Distance,
   Angle(..),
   Spin(..),
+  Radius,
+  Mass,
   applyVelocity,
   applyAcceleration,
   subtractVelocity,
@@ -55,6 +57,8 @@ newtype Acceleration = Acceleration Vector' deriving (Eq, Show)
 newtype Distance = Distance Vector' deriving (Eq, Show)
 newtype Angle = Angle Float deriving (Eq, Show)
 newtype Spin = Spin Float deriving (Eq, Show)
+type Radius = Float
+type Mass = Float
 
 instance Vector Position where
   createV x y = Position $ Vector' x y
@@ -123,7 +127,7 @@ bounce border (p1, Velocity v1, m1) (p2, Velocity v2, m2) = let
                                                        (Distance direction) = normalizeV $ distance border p1 p2
                                                        a = (2 / (1 / m1 + 1 / m2)) * dotProduct direction (subtractV' v2 v1) -- 'a' in https://www.sjsu.edu/faculty/watkins/collision.htm
                                                        v1' = subtractV' (scaleV' (a / m1) direction) v1
-                                                       v2' = addV'       (scaleV' (a / m2) direction) v2
+                                                       v2' = addV'      (scaleV' (a / m2) direction) v2
                                                      in if p1 == p2 then -- please quickcheck
                                                        (Velocity v1, Velocity v2)
                                                      else
