@@ -15,7 +15,8 @@ module GameState (
   gameStateAcceleratingL,
   defaultWidth,
   defaultHeight,
-  addEntity,
+  addAsteroid,
+  addLaser,
   destroyEntity
 ) where
 
@@ -47,7 +48,9 @@ data GameState = GameState {
   accelerating  :: Bool
 } deriving (Eq, Show)
 
-data EntityType = Player | Asteroid
+data EntityType = Player
+                | Asteroid
+                | Laser
   deriving (Eq, Show)
 
 initGameState :: GameState
@@ -162,6 +165,13 @@ addAsteroid pos vel spi = addEntity Asteroid $ withPosition pos
                                                <> withSpin spi
                                                <> withRadius 50
                                                <> withMass 30
+
+addLaser :: Position -> Velocity -> Angle -> GameState -> GameState
+addLaser pos vel ang = addEntity Laser $ withPosition pos
+                                       <> withVelocity vel
+                                       <> withAngle ang
+                                       <> withRadius 5
+                                       <> withMass 1
 
 addEntity :: EntityType -> EntityData -> GameState -> GameState
 addEntity typ (EntityData pos vel ang spi rad mas) gs = let

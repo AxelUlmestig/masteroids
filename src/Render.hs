@@ -6,16 +6,17 @@ import           Data.Maybe      (mapMaybe)
 import           Graphics.Gloss  (Picture (Blank, Pictures), rotate, translate)
 
 import           Assets          (Assets, asteroidSprite, fireSprite,
-                                  playerSprite)
-import           GameState       (EntityType (Asteroid, Player), GameState,
-                                  accelerating, gameHeight, gameStateAnglesL,
-                                  gameStateEntityTypesL, gameStatePositionsL,
-                                  gameWidth)
+                                  laserSprite, playerSprite)
+import           GameState       (EntityType (Asteroid, Laser, Player),
+                                  GameState, accelerating, gameHeight,
+                                  gameStateAnglesL, gameStateEntityTypesL,
+                                  gameStatePositionsL, gameWidth)
 import           Physics         (Angle (Angle), Position, createV,
                                   movePosition, rotateV, toPair)
 
 data RenderData = PlayerRender Position Angle Bool
                 | AsteroidRender Position Angle
+                | LaserRender Position Angle
 
 render :: Assets -> GameState -> Picture
 render assets gs = renderLoopedSpace gs $ offsetGameWindow gs $ Pictures $ renderEntity assets <$> allRenderData gs
@@ -26,6 +27,7 @@ allRenderData gs = let
                      mAng eid           = view (gameStateAnglesL . at eid) gs
                      f (eid, Player)    = PlayerRender <$> mPos eid <*> mAng eid <*> return (accelerating gs)
                      f (eid, Asteroid)  = AsteroidRender <$> mPos eid <*> mAng eid
+                     f (eid, Laser)     = LaserRender <$> mPos eid <*> mAng eid
                    in mapMaybe f . M.toList . view gameStateEntityTypesL $ gs
 
 renderEntity :: Assets -> RenderData -> Picture
@@ -37,6 +39,9 @@ renderEntity assets (PlayerRender pos (Angle ang) acc) = Pictures [player, fire]
       where
         (x', y') = toPair $ movePosition (rotateV (Angle (180 + ang)) (createV 50 0)) pos
 renderEntity assets (AsteroidRender pos (Angle ang)) = translate x y (rotate (-ang) (asteroidSprite assets))
+  where
+    (x, y) = toPair pos
+renderEntity assets (LaserRender pos (Angle ang)) = translate x y (rotate (-ang) (laserSprite assets))
   where
     (x, y) = toPair pos
 
