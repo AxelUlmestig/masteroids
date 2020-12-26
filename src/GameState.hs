@@ -51,7 +51,7 @@ data GameState = GameState {
 data EntityType = Player
                 | Asteroid
                 | Laser
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
 initGameState :: GameState
 initGameState = let

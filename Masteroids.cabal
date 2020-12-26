@@ -29,7 +29,8 @@ executable masteroids
                        Systems.ApplyVelocities,
                        Systems.BorderPatrol,
                        Systems.HandleCollisions,
-                       Systems.SetPlayerAngle
+                       Systems.SetPlayerAngle,
+                       PlayerActions.FireLaser
   build-depends:       base >= 4.7 && < 5,
                        gloss >= 1.13,
                        lens,

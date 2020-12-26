@@ -1,10 +1,13 @@
 module Systems.HandleCollisions (handleCollisions) where
 
 import           Control.Lens    (at, over, view)
+import           Data.List       (sortOn)
 import qualified Data.Map.Strict as M
 import           Data.Maybe      (fromMaybe)
 
-import           GameState       (GameState, gameHeight, gameStateMassesL,
+import           GameState       (EntityType (Asteroid, Laser, Player),
+                                  GameState, destroyEntity, gameHeight,
+                                  gameStateEntityTypesL, gameStateMassesL,
                                   gameStatePositionsL, gameStateRadiiL,
                                   gameStateVelocitiesL, gameWidth)
 import           Physics         (Position, Radius, absV, bounce, distance)
@@ -24,7 +27,21 @@ detectCollisions border ((i, (p, r)):ps) = let
 detectCollisions _ _                = []
 
 handleCollision :: (Float, Float) -> (Int, Int) -> GameState -> GameState
-handleCollision border (id1, id2) gs = let
+handleCollision border (id1, id2) gs = fromMaybe gs $ do
+                                         t1 <- view (gameStateEntityTypesL . at id1) gs
+                                         t2 <- view (gameStateEntityTypesL . at id2) gs
+                                         return $ f border (id1, t1) (id2, t2) gs
+
+f :: (Float, Float) -> (Int, EntityType) -> (Int, EntityType) -> GameState -> GameState
+f border x1 x2 = foldr (.) id $ case sortOn snd [x1, x2] of
+                                  [(id1, Player), (id2, Asteroid)]  -> [bounceEntities border (id1, id2)]
+                                  [(id1, Player), (id2, Laser)]     -> [destroyEntity id2, bounceEntities border (id1, id2)]
+                                  [(id1, Asteroid), (id2, Laser)]   -> [destroyEntity id2, bounceEntities border (id1, id2)]
+                                  _                                 -> []
+
+
+bounceEntities :: (Float, Float) -> (Int, Int) -> GameState -> GameState
+bounceEntities border (id1, id2) gs = let
                                          maybeUpdate = do
                                            p1 <- view (gameStatePositionsL . at id1) gs
                                            v1 <- view (gameStateVelocitiesL . at id1) gs
