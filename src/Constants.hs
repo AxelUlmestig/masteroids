@@ -47,7 +47,7 @@ asteroidRadius = 50
 -- Laser
 
 laserBaseSpeed :: Velocity
-laserBaseSpeed = createV 20 0
+laserBaseSpeed = createV 30 0
 
 laserMass :: Mass
 laserMass = 1
