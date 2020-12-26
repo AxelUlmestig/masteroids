@@ -3,13 +3,14 @@ module Main where
 import           Graphics.Gloss    (Display (InWindow), black, play)
 
 import           Assets            (loadAssets)
-import           GameState         (defaultHeight, defaultWidth, initGameState)
+import qualified Constants
+import           GameState         (initGameState)
 import           HandleInput       (handleInput)
 import           ProgressGameState (progressGameState)
 import           Render            (render)
 
 windowDisplay :: Display
-windowDisplay = InWindow "Window" (defaultWidth, defaultHeight) (10, 10)
+windowDisplay = InWindow "Window" (Constants.defaultWidth, Constants.defaultHeight) (10, 10)
 
 main :: IO ()
 main = do

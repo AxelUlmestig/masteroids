@@ -13,8 +13,6 @@ module GameState (
   gameStateMassesL,
   gameStateMousePositionL,
   gameStateAcceleratingL,
-  defaultWidth,
-  defaultHeight,
   addAsteroid,
   addLaser,
   destroyEntity
@@ -24,14 +22,9 @@ import           Control.Applicative ((<|>))
 import           Control.Lens        (Lens', lens, over)
 import qualified Data.Map.Strict     as M
 
+import qualified Constants
 import           Physics             (Angle (Angle), Mass, Position, Radius,
-                                      Spin (Spin), Velocity, createV)
-
-defaultWidth :: Int
-defaultWidth = 800
-
-defaultHeight :: Int
-defaultHeight = 800
+                                      Spin, Velocity, createV)
 
 data GameState = GameState {
   gameWidth     :: Int,
@@ -56,8 +49,8 @@ data EntityType = Player
 initGameState :: GameState
 initGameState = let
                   empty = GameState {
-                    gameWidth       = defaultWidth,
-                    gameHeight      = defaultHeight,
+                    gameWidth       = Constants.defaultWidth,
+                    gameHeight      = Constants.defaultHeight,
                     availableId     = 1,
                     entityTypes     = M.empty,
                     positions       = M.empty,
@@ -71,7 +64,7 @@ initGameState = let
                   }
 
                   addP = addPlayer (createV 400 400) (createV 0 0)
-                  addA = addAsteroid (createV 100 100) (createV 0 0) (Spin 1)
+                  addA = addAsteroid (createV 100 100) (createV 0 0) Constants.asteroidDefaultSpin
                 in addA $ addP empty
 
 -- lenses
@@ -155,23 +148,23 @@ addPlayer :: Position -> Velocity -> GameState -> GameState
 addPlayer pos vel = addEntity Player $ withPosition pos
                                        <> withVelocity vel
                                        <> withAngle (Angle 0)
-                                       <> withRadius 50
-                                       <> withMass 10
+                                       <> withRadius Constants.playerRadius
+                                       <> withMass Constants.playerMass
 
 addAsteroid :: Position -> Velocity -> Spin -> GameState -> GameState
 addAsteroid pos vel spi = addEntity Asteroid $ withPosition pos
                                                <> withVelocity vel
                                                <> withAngle (Angle 0)
                                                <> withSpin spi
-                                               <> withRadius 50
-                                               <> withMass 30
+                                               <> withRadius Constants.asteroidRadius
+                                               <> withMass Constants.asteroidMass
 
 addLaser :: Position -> Velocity -> Angle -> GameState -> GameState
 addLaser pos vel ang = addEntity Laser $ withPosition pos
                                        <> withVelocity vel
                                        <> withAngle ang
-                                       <> withRadius 5
-                                       <> withMass 1
+                                       <> withRadius Constants.laserRadius
+                                       <> withMass Constants.laserMass
 
 addEntity :: EntityType -> EntityData -> GameState -> GameState
 addEntity typ (EntityData pos vel ang spi rad mas) gs = let

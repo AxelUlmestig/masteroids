@@ -4,18 +4,13 @@ import           Control.Lens    (at, view)
 import qualified Data.Map.Strict as M
 import           Data.Maybe      (fromMaybe)
 
+import qualified Constants
 import           GameState       (EntityType (Player), GameState, addLaser,
                                   gameStateAnglesL, gameStateEntityTypesL,
                                   gameStatePositionsL, gameStateRadiiL,
                                   gameStateVelocitiesL)
-import           Physics         (Acceleration, Radius, applyAcceleration,
-                                  createV, movePosition, rotateV)
+import           Physics         (addV, createV, movePosition, rotateV)
 
-laserBaseSpeed :: Acceleration
-laserBaseSpeed = createV 20 0
-
-laserRadius :: Radius
-laserRadius = 5
 
 fireLaser :: GameState -> GameState
 fireLaser gs = foldr ($) gs (fireFromPlayer <$> players gs)
@@ -29,8 +24,8 @@ fireFromPlayer pid gs = fromMaybe gs gs'
                                           <*> view (gameStateAnglesL . at pid) gs
                                           <*> view (gameStateRadiiL . at pid) gs
 
-            let laserPos = movePosition (rotateV ang (createV (rad + laserRadius + 1) 0)) pos
-            let laserVel = applyAcceleration (rotateV ang laserBaseSpeed) vel
+            let laserPos = movePosition (rotateV ang (createV (rad + Constants.laserRadius + 1) 0)) pos
+            let laserVel = addV (rotateV ang Constants.laserBaseSpeed) vel
             return $ addLaser laserPos laserVel ang gs
 
 players :: GameState -> [Int]
