@@ -4,6 +4,7 @@ module Constants (
 
   playerAcceleration,
   playerMass,
+  playerMaxHP,
   playerRadius,
 
   asteroidDefaultSpin,
@@ -11,12 +12,13 @@ module Constants (
   asteroidRadius,
 
   laserBaseSpeed,
+  laserDamage,
   laserMass,
   laserRadius
 ) where
 
-import           Physics (Acceleration, Mass, Radius, Spin (Spin), Velocity,
-                          createV)
+import           Physics (Acceleration, Hitpoints, Mass, Radius, Spin (Spin),
+                          Velocity, createV)
 
 defaultHeight :: Int
 defaultHeight = 800
@@ -30,6 +32,9 @@ playerAcceleration = createV 0.3 0
 
 playerMass :: Mass
 playerMass = 10
+
+playerMaxHP :: Hitpoints
+playerMaxHP = 10
 
 playerRadius :: Radius
 playerRadius = 50
@@ -48,6 +53,9 @@ asteroidRadius = 50
 
 laserBaseSpeed :: Velocity
 laserBaseSpeed = createV 30 0
+
+laserDamage :: Hitpoints
+laserDamage = 1
 
 laserMass :: Mass
 laserMass = 1

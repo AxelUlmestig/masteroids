@@ -2,6 +2,7 @@ module GameState (
   GameState(..),
   EntityType(..),
   initGameState,
+
   gameStateGameWidthL,
   gameStateGameHeightL,
   gameStateEntityTypesL,
@@ -11,8 +12,10 @@ module GameState (
   gameStateSpinL,
   gameStateRadiiL,
   gameStateMassesL,
+  gameStateHPL,
   gameStateMousePositionL,
   gameStateAcceleratingL,
+
   addAsteroid,
   addLaser,
   destroyEntity
@@ -23,8 +26,8 @@ import           Control.Lens        (Lens', lens, over)
 import qualified Data.Map.Strict     as M
 
 import qualified Constants
-import           Physics             (Angle (Angle), Mass, Position, Radius,
-                                      Spin, Velocity, createV)
+import           Physics             (Angle (Angle), Hitpoints, Mass, Position,
+                                      Radius, Spin, Velocity, createV)
 
 data GameState = GameState {
   gameWidth     :: Int,
@@ -37,6 +40,7 @@ data GameState = GameState {
   spins         :: M.Map Int Spin,
   radii         :: M.Map Int Radius,
   masses        :: M.Map Int Mass,
+  hitpoints     :: M.Map Int Hitpoints,
   mousePosition :: Position,
   accelerating  :: Bool
 } deriving (Eq, Show)
@@ -59,6 +63,7 @@ initGameState = let
                     spins           = M.empty,
                     radii           = M.empty,
                     masses          = M.empty,
+                    hitpoints       = M.empty,
                     mousePosition   = createV 0 0,
                     accelerating    = False
                   }
@@ -95,6 +100,9 @@ gameStateRadiiL = lens radii (\gs r -> gs { radii = r })
 gameStateMassesL :: Lens' GameState (M.Map Int Mass)
 gameStateMassesL = lens masses (\gs m -> gs { masses = m })
 
+gameStateHPL :: Lens' GameState (M.Map Int Hitpoints)
+gameStateHPL = lens hitpoints (\gs hp -> gs { hitpoints = hp })
+
 gameStateMousePositionL :: Lens' GameState Position
 gameStateMousePositionL = lens mousePosition (\gs mp -> gs { mousePosition = mp })
 
@@ -109,9 +117,10 @@ data EntityData = EntityData
                     (Maybe Spin)
                     (Maybe Radius)
                     (Maybe Mass)
+                    (Maybe Hitpoints)
 
 instance Semigroup EntityData where
-  (EntityData p1 v1 a1 s1 r1 m1) <> (EntityData p2 v2 a2 s2 r2 m2) =
+  (EntityData p1 v1 a1 s1 r1 m1 hp1) <> (EntityData p2 v2 a2 s2 r2 m2 hp2) =
     EntityData
       (p2 <|> p1)
       (v2 <|> v1)
@@ -119,27 +128,31 @@ instance Semigroup EntityData where
       (s2 <|> s1)
       (r2 <|> r1)
       (m2 <|> m1)
+      (hp2 <|> hp1)
 
 instance Monoid EntityData where
-  mempty = EntityData Nothing Nothing Nothing Nothing Nothing Nothing
+  mempty = EntityData Nothing Nothing Nothing Nothing Nothing Nothing Nothing
 
 withPosition :: Position -> EntityData
-withPosition pos = EntityData (Just pos) Nothing Nothing Nothing Nothing Nothing
+withPosition pos = EntityData (Just pos) Nothing Nothing Nothing Nothing Nothing Nothing
 
 withVelocity :: Velocity -> EntityData
-withVelocity vel = EntityData Nothing (Just vel) Nothing Nothing Nothing Nothing
+withVelocity vel = EntityData Nothing (Just vel) Nothing Nothing Nothing Nothing Nothing
 
 withAngle :: Angle -> EntityData
-withAngle ang = EntityData Nothing Nothing (Just ang) Nothing Nothing Nothing
+withAngle ang = EntityData Nothing Nothing (Just ang) Nothing Nothing Nothing Nothing
 
 withSpin :: Spin -> EntityData
-withSpin spi = EntityData Nothing Nothing Nothing (Just spi) Nothing Nothing
+withSpin spi = EntityData Nothing Nothing Nothing (Just spi) Nothing Nothing Nothing
 
 withRadius :: Radius -> EntityData
-withRadius rad = EntityData Nothing Nothing Nothing Nothing (Just rad) Nothing
+withRadius rad = EntityData Nothing Nothing Nothing Nothing (Just rad) Nothing Nothing
 
 withMass :: Mass -> EntityData
-withMass mas = EntityData Nothing Nothing Nothing Nothing Nothing (Just mas)
+withMass mas = EntityData Nothing Nothing Nothing Nothing Nothing (Just mas) Nothing
+
+withHitpoints :: Hitpoints -> EntityData
+withHitpoints hp = EntityData Nothing Nothing Nothing Nothing Nothing Nothing (Just hp)
 
 getNewId :: GameState -> (Int, GameState)
 getNewId gs@GameState { availableId = aid } = (aid, gs { availableId = aid + 1})
@@ -150,6 +163,7 @@ addPlayer pos vel = addEntity Player $ withPosition pos
                                        <> withAngle (Angle 0)
                                        <> withRadius Constants.playerRadius
                                        <> withMass Constants.playerMass
+                                       <> withHitpoints Constants.playerMaxHP
 
 addAsteroid :: Position -> Velocity -> Spin -> GameState -> GameState
 addAsteroid pos vel spi = addEntity Asteroid $ withPosition pos
@@ -158,6 +172,7 @@ addAsteroid pos vel spi = addEntity Asteroid $ withPosition pos
                                                <> withSpin spi
                                                <> withRadius Constants.asteroidRadius
                                                <> withMass Constants.asteroidMass
+                                               <> withHitpoints 10
 
 addLaser :: Position -> Velocity -> Angle -> GameState -> GameState
 addLaser pos vel ang = addEntity Laser $ withPosition pos
@@ -167,7 +182,7 @@ addLaser pos vel ang = addEntity Laser $ withPosition pos
                                        <> withMass Constants.laserMass
 
 addEntity :: EntityType -> EntityData -> GameState -> GameState
-addEntity typ (EntityData pos vel ang spi rad mas) gs = let
+addEntity typ (EntityData pos vel ang spi rad mas hp) gs = let
                                  (eid, gs') = getNewId gs
                                  setTyp = over gameStateEntityTypesL (M.insert eid typ)
                                  setPos = maybe id (over gameStatePositionsL . M.insert eid) pos
@@ -176,7 +191,8 @@ addEntity typ (EntityData pos vel ang spi rad mas) gs = let
                                  setSpi = maybe id (over gameStateSpinL . M.insert eid) spi
                                  setRad = maybe id (over gameStateRadiiL . M.insert eid) rad
                                  setMas = maybe id (over gameStateMassesL . M.insert eid) mas
-                               in setTyp $ setPos $ setVel $ setAng $ setSpi $ setRad $ setMas gs'
+                                 setHP  = maybe id (over gameStateHPL . M.insert eid) hp
+                               in setTyp $ setPos $ setVel $ setAng $ setSpi $ setRad $ setMas $ setHP gs'
 
 destroyEntity :: Int -> GameState -> GameState
 destroyEntity eid = let
@@ -186,4 +202,5 @@ destroyEntity eid = let
                       destroySpin = over gameStateSpinL (M.delete eid)
                       destroyRad  = over gameStateRadiiL (M.delete eid)
                       destroyMas  = over gameStateMassesL (M.delete eid)
-                    in foldr (.) id [destroyPos, destroyVel, destroyAng, destroySpin, destroyRad, destroyMas]
+                      destroyHP  = over gameStateHPL (M.delete eid)
+                    in foldr (.) id [destroyHP, destroyPos, destroyVel, destroyAng, destroySpin, destroyRad, destroyMas]

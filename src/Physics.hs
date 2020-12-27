@@ -8,6 +8,7 @@ module Physics (
   Spin(..),
   Radius,
   Mass,
+  Hitpoints,
   applyVelocity,
   applyAcceleration,
   subtractVelocity,
@@ -59,6 +60,7 @@ newtype Angle = Angle Float deriving (Eq, Show)
 newtype Spin = Spin Float deriving (Eq, Show)
 type Radius = Float
 type Mass = Float
+type Hitpoints = Int
 
 instance Vector Position where
   createV x y = Position $ Vector' x y

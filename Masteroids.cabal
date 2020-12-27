@@ -29,6 +29,7 @@ executable masteroids
                        Systems.ApplyVelocities,
                        Systems.BorderPatrol,
                        Systems.HandleCollisions,
+                       Systems.HandleZeroHP,
                        Systems.SetPlayerAngle,
                        PlayerActions.FireLaser,
                        Constants
