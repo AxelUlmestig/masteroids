@@ -45,7 +45,7 @@ asteroidDefaultSpin :: Spin
 asteroidDefaultSpin = Spin 1
 
 asteroidMass :: Mass
-asteroidMass = 10
+asteroidMass = 30
 
 asteroidRadius :: Radius
 asteroidRadius = 50

@@ -4,6 +4,7 @@ import           Control.Lens    (at, imap, view)
 import qualified Data.Map.Strict as M
 import           Data.Maybe      (fromMaybe)
 
+import qualified Constants
 import           GameState       (EntityType (Asteroid), GameState, addAsteroid,
                                   destroyEntity, gameStateEntityTypesL,
                                   gameStateHPL, gameStateMassesL,
@@ -25,13 +26,15 @@ breakAsteroid :: Int -> GameState -> GameState
 breakAsteroid eid gs =
   fromMaybe gs $ do
     typ <- view (gameStateEntityTypesL . at eid) gs
+    mass0 <- view (gameStateMassesL . at eid) gs
 
     if typ /= Asteroid then
       Nothing
+    else if mass0 < Constants.asteroidMass / 4 then
+      return $ destroyEntity eid gs
     else do
       pos0  <- view (gameStatePositionsL . at eid) gs
       vel0  <- view (gameStateVelocitiesL . at eid) gs
-      mass0 <- view (gameStateMassesL . at eid) gs
       rad0  <- view (gameStateRadiiL . at eid) gs
       spin0 <- view (gameStateSpinL . at eid) gs
 

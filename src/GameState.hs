@@ -172,7 +172,7 @@ addAsteroid pos vel mas rad spi = addEntity Asteroid $ withPosition pos
                                                      <> withSpin spi
                                                      <> withRadius rad
                                                      <> withMass mas
-                                                     <> withHitpoints 5
+                                                     <> withHitpoints (round (mas / 6))
 
 addLaser :: Position -> Velocity -> Angle -> GameState -> GameState
 addLaser pos vel ang = addEntity Laser $ withPosition pos
