@@ -31,6 +31,8 @@ executable masteroids
                        Systems.HandleCollisions,
                        Systems.HandleZeroHP,
                        Systems.SetPlayerAngle,
+                       Systems.Collisions.TakeLaserDamage,
+                       Systems.Collisions.BounceEntities,
                        PlayerActions.FireLaser,
                        Constants
   build-depends:       base >= 4.7 && < 5,

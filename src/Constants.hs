@@ -10,6 +10,7 @@ module Constants (
   asteroidDefaultSpin,
   asteroidMass,
   asteroidRadius,
+  asteroidSpriteDefaultRadius,
 
   laserBaseSpeed,
   laserDamage,
@@ -48,6 +49,9 @@ asteroidMass = 10
 
 asteroidRadius :: Radius
 asteroidRadius = 50
+
+asteroidSpriteDefaultRadius :: Radius
+asteroidSpriteDefaultRadius = 50
 
 -- Laser
 

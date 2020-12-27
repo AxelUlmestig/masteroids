@@ -69,7 +69,7 @@ initGameState = let
                   }
 
                   addP = addPlayer (createV 400 400) (createV 0 0)
-                  addA = addAsteroid (createV 100 100) (createV 0 0) Constants.asteroidDefaultSpin
+                  addA = addAsteroid (createV 100 100) (createV 0 0) Constants.asteroidMass Constants.asteroidRadius Constants.asteroidDefaultSpin
                 in addA $ addP empty
 
 -- lenses
@@ -165,14 +165,14 @@ addPlayer pos vel = addEntity Player $ withPosition pos
                                        <> withMass Constants.playerMass
                                        <> withHitpoints Constants.playerMaxHP
 
-addAsteroid :: Position -> Velocity -> Spin -> GameState -> GameState
-addAsteroid pos vel spi = addEntity Asteroid $ withPosition pos
-                                               <> withVelocity vel
-                                               <> withAngle (Angle 0)
-                                               <> withSpin spi
-                                               <> withRadius Constants.asteroidRadius
-                                               <> withMass Constants.asteroidMass
-                                               <> withHitpoints 10
+addAsteroid :: Position -> Velocity -> Mass -> Radius -> Spin -> GameState -> GameState
+addAsteroid pos vel mas rad spi = addEntity Asteroid $ withPosition pos
+                                                     <> withVelocity vel
+                                                     <> withAngle (Angle 0)
+                                                     <> withSpin spi
+                                                     <> withRadius rad
+                                                     <> withMass mas
+                                                     <> withHitpoints 5
 
 addLaser :: Position -> Velocity -> Angle -> GameState -> GameState
 addLaser pos vel ang = addEntity Laser $ withPosition pos

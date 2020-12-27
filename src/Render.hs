@@ -3,19 +3,22 @@ module Render (render) where
 import           Control.Lens    (at, view)
 import qualified Data.Map.Strict as M
 import           Data.Maybe      (mapMaybe)
-import           Graphics.Gloss  (Picture (Blank, Pictures), rotate, translate)
+import           Graphics.Gloss  (Picture (Blank, Pictures), rotate, scale,
+                                  translate)
 
 import           Assets          (Assets, asteroidSprite, fireSprite,
                                   laserSprite, playerSprite)
+import qualified Constants
 import           GameState       (EntityType (Asteroid, Laser, Player),
                                   GameState, accelerating, gameHeight,
                                   gameStateAnglesL, gameStateEntityTypesL,
-                                  gameStatePositionsL, gameWidth)
-import           Physics         (Angle (Angle), Position, createV,
+                                  gameStatePositionsL, gameStateRadiiL,
+                                  gameWidth)
+import           Physics         (Angle (Angle), Position, Radius, createV,
                                   movePosition, rotateV, toPair)
 
 data RenderData = PlayerRender Position Angle Bool
-                | AsteroidRender Position Angle
+                | AsteroidRender Position Angle Radius
                 | LaserRender Position Angle
 
 render :: Assets -> GameState -> Picture
@@ -25,8 +28,10 @@ allRenderData :: GameState -> [RenderData]
 allRenderData gs = let
                      mPos eid           = view (gameStatePositionsL . at eid) gs
                      mAng eid           = view (gameStateAnglesL . at eid) gs
+                     mRad eid           = view (gameStateRadiiL . at eid) gs
+
                      f (eid, Player)    = PlayerRender <$> mPos eid <*> mAng eid <*> return (accelerating gs)
-                     f (eid, Asteroid)  = AsteroidRender <$> mPos eid <*> mAng eid
+                     f (eid, Asteroid)  = AsteroidRender <$> mPos eid <*> mAng eid <*> mRad eid
                      f (eid, Laser)     = LaserRender <$> mPos eid <*> mAng eid
                    in mapMaybe f . M.toList . view gameStateEntityTypesL $ gs
 
@@ -38,9 +43,10 @@ renderEntity assets (PlayerRender pos (Angle ang) acc) = Pictures [player, fire]
     fire = if acc then translate x' y' (rotate (-ang) (fireSprite assets)) else Blank
       where
         (x', y') = toPair $ movePosition (rotateV (Angle (180 + ang)) (createV 50 0)) pos
-renderEntity assets (AsteroidRender pos (Angle ang)) = translate x y (rotate (-ang) (asteroidSprite assets))
+renderEntity assets (AsteroidRender pos (Angle ang) rad) = translate x y $ rotate (-ang) $ scale s s $ asteroidSprite assets
   where
-    (x, y) = toPair pos
+    (x, y)  = toPair pos
+    s       = rad / Constants.asteroidSpriteDefaultRadius
 renderEntity assets (LaserRender pos (Angle ang)) = translate x y (rotate (-ang) (laserSprite assets))
   where
     (x, y) = toPair pos
