@@ -1,24 +1,28 @@
 module PlayerActions.FireLaser (fireLaser) where
 
-import           Control.Lens    (at, over, view)
-import qualified Data.Map.Strict as M
-import           Data.Maybe      (fromMaybe)
+import           Control.Lens                (at, over, view)
+import           Control.Monad.Writer.Strict (Writer, writer)
+import qualified Data.Map.Strict             as M
+import           Data.Maybe                  (fromMaybe)
 
 import qualified Constants
-import           GameState       (EntityType (Player), GameState, addLaser,
-                                  gameStateAnglesL, gameStateEntityTypesL,
-                                  gameStatePositionsL, gameStateRadiiL,
-                                  gameStateVelocitiesL)
-import           Physics         (addV, createV, movePosition, rotateV, scaleV,
-                                  subtractV)
+import           GameState                   (EntityType (Player), GameState,
+                                              addLaser, gameStateAnglesL,
+                                              gameStateEntityTypesL,
+                                              gameStatePositionsL,
+                                              gameStateRadiiL,
+                                              gameStateVelocitiesL)
+import           Physics                     (addV, createV, movePosition,
+                                              rotateV, scaleV, subtractV)
+import           SoundEffects                (SoundEffect (FireLaserSound))
 
 
-fireLaser :: GameState -> GameState
-fireLaser gs = foldr ($) gs (fireFromPlayer <$> players gs)
+fireLaser :: GameState -> Writer [SoundEffect] GameState
+fireLaser gs = foldr (=<<) (pure gs) (fireFromPlayer <$> players gs)
 
-fireFromPlayer :: Int -> GameState -> GameState
+fireFromPlayer :: Int -> GameState -> Writer [SoundEffect] GameState
 fireFromPlayer pid gs =
-  fromMaybe gs $ do
+  fromMaybe (pure gs) $ do
     (pos, vel, ang, rad) <- (,,,) <$> view (gameStatePositionsL . at pid) gs
                                   <*> view (gameStateVelocitiesL . at pid) gs
                                   <*> view (gameStateAnglesL . at pid) gs
@@ -30,7 +34,8 @@ fireFromPlayer pid gs =
     let playerMomentumDiff = scaleV (Constants.laserMass / Constants.playerMass) laserVel
     let recoilPlayer = over gameStateVelocitiesL $ M.adjust (subtractV playerMomentumDiff) pid
 
-    return $ recoilPlayer $ addLaser laserPos laserVel ang gs
+    let gs' = recoilPlayer $ addLaser laserPos laserVel ang gs
+    pure $ writer (gs', [FireLaserSound])
 
 players :: GameState -> [Int]
 players = fmap fst . filter ((==Player) . snd) . M.toList . view gameStateEntityTypesL

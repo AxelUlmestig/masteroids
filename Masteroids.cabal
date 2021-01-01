@@ -34,11 +34,13 @@ executable masteroids
                        Systems.Collisions.TakeLaserDamage,
                        Systems.Collisions.BounceEntities,
                        PlayerActions.FireLaser,
-                       Constants
+                       Constants,
+                       SoundEffects
   build-depends:       base >= 4.7 && < 5,
                        gloss >= 1.13,
                        lens,
-                       containers
+                       containers,
+                       mtl
 
 test-suite properties
   type:                exitcode-stdio-1.0

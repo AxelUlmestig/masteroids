@@ -1,13 +1,14 @@
 module Main where
 
-import           Graphics.Gloss    (Display (InWindow), black, play)
+import           Graphics.Gloss                   (Display (InWindow), black)
+import           Graphics.Gloss.Interface.IO.Game (playIO)
 
-import           Assets            (loadAssets)
+import           Assets                           (loadAssets)
 import qualified Constants
-import           GameState         (initGameState)
-import           HandleInput       (handleInput)
-import           ProgressGameState (progressGameState)
-import           Render            (render)
+import           GameState                        (initGameState)
+import           HandleInput                      (handleInput)
+import           ProgressGameState                (progressGameState)
+import           Render                           (render)
 
 windowDisplay :: Display
 windowDisplay = InWindow "Window" (Constants.defaultWidth, Constants.defaultHeight) (10, 10)
@@ -15,11 +16,11 @@ windowDisplay = InWindow "Window" (Constants.defaultWidth, Constants.defaultHeig
 main :: IO ()
 main = do
   assets <- loadAssets
-  play
+  playIO
     windowDisplay
     black
     60
     initGameState
-    (render assets)
+    (pure . render assets)
     handleInput
     progressGameState
