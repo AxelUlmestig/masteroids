@@ -40,7 +40,8 @@ executable masteroids
                        gloss >= 1.13,
                        lens,
                        containers,
-                       mtl
+                       mtl,
+                       ALUT
 
 test-suite properties
   type:                exitcode-stdio-1.0

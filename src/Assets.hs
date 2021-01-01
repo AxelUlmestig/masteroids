@@ -14,8 +14,8 @@ data Assets = Assets {
 
 loadAssets :: IO Assets
 loadAssets = do
-  playerS   <- rotate 90 <$> loadBMP "assets/playerShip2-blue.bmp"
-  fireS     <- rotate 90 <$> loadBMP "assets/fire01.bmp"
-  asteroidS <- loadBMP "assets/meteorBrown-big4.bmp"
-  laserS    <- rotate 90 <$> loadBMP "assets/laserGreen13.bmp"
+  playerS   <- rotate 90 <$> loadBMP "assets/sprites/playerShip2-blue.bmp"
+  fireS     <- rotate 90 <$> loadBMP "assets/sprites/fire01.bmp"
+  asteroidS <- loadBMP "assets/sprites/meteorBrown-big4.bmp"
+  laserS    <- rotate 90 <$> loadBMP "assets/sprites/laserGreen13.bmp"
   return $ Assets playerS fireS asteroidS laserS
