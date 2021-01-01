@@ -18,7 +18,7 @@ jobs:
           name: Install OpenAL and ALUT
           command: |
             apt update
-            apt install -y install libopenal1 libopenal-dev libalut0 libalut-dev
+            apt install -y libopenal1 libopenal-dev libalut0 libalut-dev
       - run:
           name: Build dependecies
           command: stack build --system-ghc --only-dependencies
