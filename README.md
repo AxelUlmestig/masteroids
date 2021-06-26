@@ -1,5 +1,7 @@
 # Masteroids
 
+![gameplay](./masteroids-gameplay.mp4)
+
 ### Run
 ```
 $ stack run
