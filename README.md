@@ -1,6 +1,8 @@
 # Masteroids
 
-![gameplay](./masteroids-gameplay.mp4)
+![gameplay](./masteroids-gameplay.gif)
+
+<img src="./masteroids-gameplay.mp4" alt="My Project GIF" width="500" height="600">
 
 ### Run
 ```
